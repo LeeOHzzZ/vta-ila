@@ -1,10 +1,3 @@
-# ILA project template
+# Instruction-level Abstration (ILA) of VTA
 
-To initialize the project with your customized name, run:
-
-```bash
-python3 script/init.py <project_name>
-```
-
-This will generate the template ILA project. 
-The directory `template` can be removed afterward.
+This is the ILA model of [VTA](https://tvm.apache.org/vta) 
