@@ -7,9 +7,11 @@
 #include <string>
 
 namespace ilang {
+namespace vta{
 
 Ila GetVtaIla(const std::string& model_name = "vta");
 
-};
+} // namespace vta
+}; // namespace ilang
 
 #endif // VTA_TOP_H__
