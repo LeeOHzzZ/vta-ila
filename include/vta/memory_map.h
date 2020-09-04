@@ -1,0 +1,58 @@
+// File: memory_map.cc
+// This file contains parameters related to memory
+
+#ifndef VTA_MEM_MAP_H__
+#define VTA_MEM_MAP_H__
+
+#include <vta/top_config.h>
+
+namespace ilang {
+namespace vta {
+
+// Buffer size
+// Micro-op on-chip buffer in bytes
+#define VTA_LOG_UOP_BUFF_SIZE 15
+#define VTA_UOP_BUFF_SIZE (1 << VTA_LOG_UOP_BUFF_SIZE)
+// input on-chip buffer in bytes
+#define VTA_LOG_INPUT_BUFF_SIZE 15
+#define VTA_INPUT_BUFF_SIZE (1 << VTA_LOG_INPUT_BUFF_SIZE)
+// weight on-chip buffer in bytes
+#define VTA_LOG_WEIGHT_BUFF_SIZE 18
+#define VTA_WEIGHT_BUFF_SIZE (1 << VTA_LOG_WEIGHT_BUFF_SIZE)
+// accumulator on-chip buffer in bytes
+#define VTA_LOG_ACCUM_BUFF_SIZE 17
+#define VTA_ACCUM_BUFF_SIZE (1 << VTA_LOG_ACCUM_BUFF_SIZE)
+
+// vector in bits
+#define VTA_INPUT_MATRIX_BITWIDTH (VTA_INPUT_DATA_BITWIDTH * VTA_BATCH_SIZE * VTA_BLOCK_IN)
+#define VTA_INPUT_ELEM_BYTE_WIDTH (VTA_INPUT_MATRIX_BITWIDTH / 8)
+
+#define VTA_WEIGHT_MATRIX_BITWIDTH (VTA_WEIGHT_BITWIDTH * VTA_BLOCK_IN * VTA_BLOCK_OUT)
+#define VTA_WEIGHT_ELEM_BYTE_WIDTH (VTA_WEIGHT_MATRIX_BITWIDTH / 8)
+
+#define VTA_ACCUM_MATRIX_BITWIDTH (VTA_ACCUM_BITWIDTH * VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+#define VTA_ACCUM_ELEM_BYTE_WIDTH (VTA_ACCUM_MATRIX_BITWIDTH / 8)
+
+// #define VTA_OUT_MATRIX_BITWIDTH (VTA_OUT_BITWIDTH * VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+// #define VTA_OUT_ELEM_BYTE_WIDTH (VTA_OUT_MATRIX_BITWIDTH / 8)
+
+#define VTA_UOP_BYTE_WIDTH (VTA_UOP_BITWIDTH / 8)
+
+// memory depth
+#define VTA_UOP_BUFF_DEPTH (VTA_UOP_BUFF_SIZE / VTA_UOP_BYTE_WIDTH)
+#define VTA_INPUT_BUFF_DEPTH (VTA_INPUT_BUFF_SIZE / VTA_INPUT_ELEM_BYTE_WIDTH)
+#define VTA_WGT_BUFF_DEPTH (VTA_WEIGHT_BUFF_SIZE / VTA_WEIGHT_ELEM_BYTE_WIDTH)
+#define VTA_ACCUM_BUFF_DEPTH (VTA_ACCUM_BUFF_SIZE / VTA_ACCUM_ELEM_BYTE_WIDTH)
+
+//
+#define VTA_INPUT_MEMORY "vta_input_memory"
+#define VTA_INPUT_MEMORY_DEPTH
+
+
+
+
+
+}
+}
+
+#endif
