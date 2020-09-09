@@ -6,6 +6,7 @@
 #include <ilang/util/log.h>
 
 using namespace ilang;
+using namespace vta;
 
 int main() {
   // get the ILA model

@@ -51,6 +51,8 @@ namespace vta {
 
 // Memory bus width
 // TODO: cannot find the value of this parameter
+// This bus width is the hardware input bitwidth
+// TODO: we can abstract away the bus width, this should be a low leve implementation detail
 #define VTA_LOG_BUS_WIDTH 7
 #define VTA_BUS_BITWIDTH (1 << VTA_LOG_BUS_WIDTH)
 

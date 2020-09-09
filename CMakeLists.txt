@@ -29,6 +29,11 @@ find_package(ilang REQUIRED)
 add_executable(${MyTarget} 
   app/main.cc
   src/vta_top.cc
+  src/top_io.cc
+  src/arch_state.cc
+  src/internal_state.cc
+  src/vta_instr.cc
+  src/child_instr.cc
 )
 
 target_include_directories(${MyTarget} PRIVATE include)

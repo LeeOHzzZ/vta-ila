@@ -10,6 +10,7 @@
 #include <vta/top_io.h>
 #include <vta/instr_config.h>
 #include <vta/memory_map.h>
+#include <vta/internal_state.h>
 
 
 namespace ilang {
@@ -26,6 +27,8 @@ void DefineInternalState(Ila& m);
 
 // define instructions
 void DefineInstr(Ila& m);
+// define child instructions
+void DefineChildInstr(Ila& m);
 
 } // namespace vta
 }; // namespace ilang
