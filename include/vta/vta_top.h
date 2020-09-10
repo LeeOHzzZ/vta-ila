@@ -28,7 +28,7 @@ void DefineInternalState(Ila& m);
 // define instructions
 void DefineInstr(Ila& m);
 // define child instructions
-void DefineChildInstr(Ila& m);
+void DefineChildInstrLoad(Ila& m);
 
 } // namespace vta
 }; // namespace ilang

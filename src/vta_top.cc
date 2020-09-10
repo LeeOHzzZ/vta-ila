@@ -13,7 +13,9 @@ Ila GetVtaIla(const std::string& model_name) {
   DefineTopIO(m);
   DefineArchState(m);
   DefineInternalState(m);
+
   DefineInstr(m);
+  DefineChildInstrLoad(m);
 
   return m;
 }
