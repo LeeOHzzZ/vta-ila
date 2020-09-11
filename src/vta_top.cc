@@ -9,6 +9,8 @@ namespace vta {
 
 Ila GetVtaIla(const std::string& model_name) {
   auto m = Ila(model_name);
+  
+  SetUnsignedComparison(true);
 
   DefineTopIO(m);
   DefineArchState(m);

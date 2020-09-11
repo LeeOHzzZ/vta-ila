@@ -76,9 +76,9 @@ void DefineChildInstrLoad(Ila& m) {
     sram_addr = sram_addr + x_cntr_32 * VTA_WGT_MAT_DATA_NUM;
     dram_addr = dram_addr + x_cntr_32 * VTA_WGT_MAT_DATA_NUM;
 
-    auto sram = child.state(VTA_WEIGHT_MEMORY);
+    auto sram = m.state(VTA_WEIGHT_MEMORY);
     auto sram_next = sram;
-    auto dram = child.state(VTA_VIRTUAL_DRAM);
+    auto dram = m.state(VTA_VIRTUAL_DRAM);
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_WGT_MAT_DATA_NUM; i++) {
@@ -219,15 +219,15 @@ void DefineChildInstrLoad(Ila& m) {
     auto sram_addr = child.state(VTA_LOAD_SRAM_ADDR);
     auto dram_addr = child.state(VTA_LOAD_DRAM_ADDR);
 
-    auto sram = child.state(VTA_WEIGHT_MEMORY);
+    auto sram = m.state(VTA_INPUT_MEMORY);
     auto sram_next = sram;
-    auto dram = child.state(VTA_VIRTUAL_DRAM);
+    auto dram = m.state(VTA_VIRTUAL_DRAM);
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_INP_MAT_DATA_NUM; i++) {
-      sram_addr = sram_addr + i;
-      dram_addr = dram_addr + i;
-      sram_next = Store(sram_next, sram_addr, Load(dram, dram_addr));
+      auto addr_s = sram_addr + i;
+      auto addr_d = dram_addr + i;
+      sram_next = Store(sram_next, addr_s, Load(dram, addr_d));
     }
 
     instr.SetUpdate(sram, sram_next);
