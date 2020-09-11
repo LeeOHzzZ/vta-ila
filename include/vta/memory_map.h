@@ -54,11 +54,6 @@ namespace vta {
 // set the memory addr bitwidth to 32
 #define VTA_MEMORY_ADDR_BITWIDTH 32
 
-// virtual DRAM
-#define VTA_VIRTUAL_DRAM "vta_virtual_dram"
-#define VTA_VIRTUAL_DRAM_ENTRY_NUM 32
-#define VTA_VIRTUAL_DRAM_DATA_BITWIDTH VTA_BUS_BITWIDTH
-
 #define VTA_INPUT_MEMORY "vta_input_memory"
 #define VTA_INPUT_MEMORY_ENTRY_NUM (VTA_INPUT_BUFF_DEPTH * VTA_INP_MAT_DATA_NUM)
 // #define VTA_INPUT_MEMORY_ENTRY_NUM VTA_INPUT_BUFF_SIZE
@@ -73,6 +68,30 @@ namespace vta {
 #define VTA_ACCUM_MEMORY_ENTRY_NUM (VTA_ACCUM_BUFF_DEPTH * VTA_ACCUM_MAT_DATA_NUM)
 // #define VTA_ACCUM_MEMORY_ENTRY_NUM VTA_ACCUM_BUFF_SIZE
 #define VTA_ACCUM_MEMORY_DATA_BITWIDTH VTA_BUS_BITWIDTH
+
+#define VTA_OUT_MEMORY "vta_out_memory"
+#define VTA_OUT_MEMORY_ENTRY_NUM VTA_ACCUM_MEMORY_ENTRY_NUM
+#define VTA_OUT_MEMORY_DATA_BITWIDTH VTA_BUS_BITWIDTH
+
+// UOP memory
+#define VTA_UOP_MEMORY "vta_uop_memory"
+#define VTA_UOP_MEMORY_ENTRY_NUM VTA_UOP_BUFF_DEPTH
+#define VTA_UOP_MEMORY_DATA_BITWIDTH VTA_UOP_BITWIDTH
+
+
+// ---------------------------------------
+// vitural DRAM
+// ---------------------------------------
+
+// virtual DRAM
+#define VTA_VIRTUAL_DRAM "vta_virtual_dram"
+#define VTA_VIRTUAL_DRAM_ENTRY_NUM 32
+#define VTA_VIRTUAL_DRAM_DATA_BITWIDTH VTA_BUS_BITWIDTH
+
+// virtual DRAM for uops
+#define VTA_VIRTUAL_UOP_DRAM "vta_virtual_uop_dram"
+#define VTA_VIRTUAL_UOP_DRAM_ENTRY_NUM 20
+#define VTA_VIRTUAL_UOP_DRAM_DATA_BITWIDTH VTA_UOP_BITWIDTH
 
 }
 }
