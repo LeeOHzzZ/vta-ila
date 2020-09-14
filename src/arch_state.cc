@@ -32,9 +32,17 @@ void DefineArchState(Ila& m) {
 
 
   // virtual dram
-  auto vir_dram = 
-    m.NewMemState(VTA_VIRTUAL_DRAM, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_DRAM_DATA_BITWIDTH);
-  vir_dram.SetEntryNum(VTA_VIRTUAL_DRAM_ENTRY_NUM);
+  auto vir_dram_inp = 
+    m.NewMemState(VTA_VIRTUAL_DRAM_INPUT, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_DRAM_INPUT_DATA_BITWIDTH);
+  vir_dram_inp.SetEntryNum(VTA_VIRTUAL_DRAM_INPUT_ENTRY_NUM);
+
+  auto vir_dram_weight = 
+    m.NewMemState(VTA_VIRTUAL_DRAM_WEIGHT, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_DRAM_WEIGHT_DATA_BITWIDTH);
+  vir_dram_weight.SetEntryNum(VTA_VIRTUAL_DRAM_WEIGHT_ENTRY_NUM);
+
+  auto vir_dram_bias = 
+    m.NewMemState(VTA_VIRTUAL_DRAM_BIAS, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_DRAM_BIAS_DATA_BITWIDTH);
+  vir_dram_bias.SetEntryNum(VTA_VIRTUAL_DRAM_BIAS_ENTRY_NUM);
 
   auto vir_uop_dram = 
     m.NewMemState(VTA_VIRTUAL_UOP_DRAM, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_UOP_DRAM_DATA_BITWIDTH);

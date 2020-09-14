@@ -207,6 +207,53 @@ void DefineInstr(Ila& m) {
   
   }
 
+  { // vta instruction for GEMM
+    auto instr = m.NewInstr("vta_gemm");
+    auto is_opcode_gemm = (opcode == VTA_OPCODE_GEMM);
+    instr.SetDecode(is_opcode_gemm);
+
+    // extract parameters from the instruction
+    // skip unused parameter
+    ins_temp = ins_temp >> 5;
+
+    auto uop_bgn = Extract(ins_temp, VTA_GEMM_UOP_BEGIN_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_UOP_BEGIN_BITWIDTH;
+    auto uop_end = Extract(ins_temp, VTA_GEMM_UOP_END_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_UOP_END_BITWIDTH;
+    auto iter_out = Extract(ins_temp, VTA_GEMM_ITER_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_ITER_OUT_BITWIDTH;
+    auto iter_in = Extract(ins_temp, VTA_GEMM_ITER_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_ITER_IN_BITWIDTH;
+    auto dst_factor_out = Extract(ins_temp, VTA_GEMM_DST_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_DST_FACTOR_OUT_BITWIDTH;
+    auto dst_factor_in = Extract(ins_temp, VTA_GEMM_DST_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_DST_FACTOR_IN_BITWIDTH;
+    auto src_factor_out = Extract(ins_temp, VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH;
+    auto src_factor_in = Extract(ins_temp, VTA_GEMM_SRC_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_SRC_FACTOR_IN_BITWIDTH;
+    auto wgt_factor_out = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH;
+    auto wgt_factor_in = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
+
+    instr.SetUpdate(m.state(VTA_GEMM_UOP_BEGIN), uop_bgn);
+    instr.SetUpdate(m.state(VTA_GEMM_UOP_END), uop_end);
+    instr.SetUpdate(m.state(VTA_GEMM_ITER_OUT), iter_out);
+    instr.SetUpdate(m.state(VTA_GEMM_ITER_IN), iter_in);
+    instr.SetUpdate(m.state(VTA_GEMM_DST_FACTOR_OUT), dst_factor_out);
+    instr.SetUpdate(m.state(VTA_GEMM_DST_FACTOR_IN), dst_factor_in);
+    instr.SetUpdate(m.state(VTA_GEMM_SRC_FACTOR_OUT), src_factor_in);
+    instr.SetUpdate(m.state(VTA_GEMM_SRC_FACTOR_IN), src_factor_in);
+    instr.SetUpdate(m.state(VTA_GEMM_WGT_FACTOR_OUT), wgt_factor_out);
+    instr.SetUpdate(m.state(VTA_GEMM_WGT_FACTOR_IN), wgt_factor_in);
+
+    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
+                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+                    BvConst(VTA_CHILD_STATE_GEMM_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
+  }
+
 
 }
 

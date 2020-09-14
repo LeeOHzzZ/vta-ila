@@ -31,10 +31,14 @@ namespace vta {
 #define VTA_LOG_BLOCK_SIZE 4
 #define VTA_BLOCK_SIZE (1 << VTA_LOG_BLOCK_SIZE)
 
+// the missing configs can be found by running "vta_config.py --cflags"
+
 // TODO: confirm the block in and block out values
 // cannot find in the specs
-#define VTA_BLOCK_IN VTA_BLOCK_SIZE
-#define VTA_BLOCK_OUT VTA_BLOCK_SIZE
+#define VTA_LOG_BLOCK_IN VTA_LOG_BLOCK_SIZE
+#define VTA_LOG_BLOCK_OUT VTA_LOG_BLOCK_SIZE
+#define VTA_BLOCK_IN (1 << VTA_LOG_BLOCK_IN)
+#define VTA_BLOCK_OUT (1 << VTA_LOG_BLOCK_OUT)
 
 // TODO: confirm output size
 #define VTA_LOG_OUT_BITWIDTH VTA_LOG_INPUT_DATA_BITWIDTH
@@ -53,7 +57,7 @@ namespace vta {
 // TODO: cannot find the value of this parameter
 // This bus width is the hardware input bitwidth
 // TODO: we can abstract away the bus width, this should be a low leve implementation detail
-#define VTA_LOG_BUS_WIDTH 7
+#define VTA_LOG_BUS_WIDTH 6
 #define VTA_BUS_BITWIDTH (1 << VTA_LOG_BUS_WIDTH)
 
 

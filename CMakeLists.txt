@@ -33,7 +33,8 @@ add_executable(${MyTarget}
   src/arch_state.cc
   src/internal_state.cc
   src/vta_instr.cc
-  src/child_instr.cc
+  src/child_instr_load.cc
+  src/child_instr_gemm.cc
 )
 
 target_include_directories(${MyTarget} PRIVATE include)

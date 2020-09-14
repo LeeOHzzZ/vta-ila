@@ -9,18 +9,16 @@ namespace ilang {
 namespace vta {
 
 void DefineChildInstrLoad(Ila& m) {
-  auto child = m.NewChild("vta_child");
-  auto state = m.state(VTA_CHILD_INSTR_STATE);
-  auto valid_flag = m.state(VTA_CHILD_VALID_FLAG);
-
-  auto is_child_valid = ((valid_flag == VTA_VALID) & (state != VTA_CHILD_STATE_IDLE));
-  child.SetValid(is_child_valid);
+  auto child = m.child("vta_child");
 
   // ----------- child state ------------- //
   child.NewBvState(VTA_LOAD_SRAM_ADDR, VTA_LOAD_SRAM_ADDR_BITWIDTH);
   child.NewBvState(VTA_LOAD_DRAM_ADDR, VTA_LOAD_DRAM_ADDR_BITWIDTH);
 
   // ------------ parent state ------------ // 
+  auto state = m.state(VTA_CHILD_INSTR_STATE);
+  auto valid_flag = m.state(VTA_CHILD_VALID_FLAG);
+  
   auto sram_base = m.state(VTA_SRAM_ID);
   auto dram_base = m.state(VTA_DRAM_ID);
   auto y_size = m.state(VTA_Y_SIZE);
@@ -65,6 +63,7 @@ void DefineChildInstrLoad(Ila& m) {
 
   }
 
+  ILA_INFO << "test";
   { // child instruction ---- LOAD WGT 1
     auto instr = child.NewInstr("vta_child_load_wgt_x_size");
     auto is_instr_valid = ((valid_flag == VTA_VALID) & (state == VTA_CHILD_STATE_LOAD_WGT_X_SIZE));
@@ -81,7 +80,7 @@ void DefineChildInstrLoad(Ila& m) {
 
     auto sram = m.state(VTA_WEIGHT_MEMORY);
     auto sram_next = sram;
-    auto dram = m.state(VTA_VIRTUAL_DRAM);
+    auto dram = m.state(VTA_VIRTUAL_DRAM_WEIGHT);
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_WGT_MAT_DATA_NUM; i++) {
@@ -116,7 +115,6 @@ void DefineChildInstrLoad(Ila& m) {
   // ------------------------------------------------------------------------
   // Load instruction for inputs
   // ------------------------------------------------------------------------
-
   { // child instruction ---- load_inp_0
     // this instruction add padding for y_offset_0 in the sram
     auto instr = child.NewInstr("vta_child_load_inp_y_offset_0");
@@ -228,7 +226,7 @@ void DefineChildInstrLoad(Ila& m) {
 
     auto sram = m.state(VTA_INPUT_MEMORY);
     auto sram_next = sram;
-    auto dram = m.state(VTA_VIRTUAL_DRAM);
+    auto dram = m.state(VTA_VIRTUAL_DRAM_INPUT);
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_INP_MAT_DATA_NUM; i++) {
@@ -395,7 +393,7 @@ void DefineChildInstrLoad(Ila& m) {
 
     auto sram = m.state(VTA_ACCUM_MEMORY);
     auto sram_next = sram;
-    auto dram = m.state(VTA_VIRTUAL_DRAM);
+    auto dram = m.state(VTA_VIRTUAL_DRAM_BIAS);
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_ACCUM_MAT_DATA_NUM; i++) {
