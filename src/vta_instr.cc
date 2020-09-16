@@ -257,6 +257,18 @@ void DefineInstr(Ila& m) {
                     BvConst(VTA_CHILD_STATE_GEMM_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
   }
 
+  // { // vta instruction of ALU --- MAX
+  //   auto instr = m.NewInstr("vta_alu");
+  //   auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
+
+  //   // skip unused parameters
+  //   ins_temp = ins_temp >> 4;
+    
+  //   auto reset_flag = SelectBit(ins_temp, 0);
+  //   ins_temp >> 
+
+  // }
+
 
 }
 

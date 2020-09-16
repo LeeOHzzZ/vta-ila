@@ -43,7 +43,7 @@ namespace vta {
 #define VTA_GEMM_UOP_BEGIN_BITWIDTH VTA_LOG_UOP_BUFF_DEPTH
 
 #define VTA_GEMM_UOP_END "vta_gemm_uop_end"
-#define VTA_GEMM_UOP_END_BITWIDTH VTA_LOG_UOP_BUFF_DEPTH
+#define VTA_GEMM_UOP_END_BITWIDTH (VTA_LOG_UOP_BUFF_DEPTH + 1)
 
 #define VTA_GEMM_ITER_OUT "vta_gemm_iter_out"
 #define VTA_GEMM_ITER_OUT_BITWIDTH VTA_LOOP_ITER_WIDTH
@@ -68,6 +68,15 @@ namespace vta {
 
 #define VTA_GEMM_WGT_FACTOR_IN "vta_gemm_factor_in"
 #define VTA_GEMM_WGT_FACTOR_IN_BITWIDTH VTA_LOG_WGT_BUFF_DEPTH
+
+// ALU instruction
+#define VTA_ALU_RESET_FLAG "vta_alu_reset_flag"
+#define VTA_ALU_RESET_FLAG_BITWIDTH 1
+
+#define VTA_ALU_UOP_BEGIN "vta_alu_uop_begin"
+#define VTA_ALU_UOP_BEGIN_BITWIDTH VTA_LOG_UOP_BUFF_DEPTH
+
+
 
 /*! GEMM Micro-op start position of the acc_idx field */
 #define VTA_UOP_GEM_0_0 0

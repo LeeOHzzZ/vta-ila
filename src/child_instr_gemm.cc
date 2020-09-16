@@ -89,7 +89,9 @@ void DefineChildGEMM(Ila& m) {
     // initiate loop cntr
     instr.SetUpdate(it_in, BvConst(0, it_in.bit_width()));
     instr.SetUpdate(it_out, BvConst(0, it_out.bit_width()));
-    instr.SetUpdate(upc, m.state(VTA_GEMM_UOP_BEGIN));
+    auto uop_begin = m.state(VTA_GEMM_UOP_BEGIN);
+    auto upc_next = Concat(BvConst(0, upc.bit_width()-uop_begin.bit_width()), uop_begin);
+    instr.SetUpdate(upc, upc_next);
     
     auto next_state = BvConst(VTA_CHILD_STATE_GEMM_READ_UOP, state.bit_width());
     instr.SetUpdate(state, next_state);
@@ -114,7 +116,9 @@ void DefineChildGEMM(Ila& m) {
     instr.SetUpdate(it_out, it_out + 1);
     instr.SetUpdate(it_in, BvConst(0, it_in.bit_width()));
     // initiate uop cntr
-    instr.SetUpdate(upc, m.state(VTA_GEMM_UOP_BEGIN));
+    auto uop_begin = m.state(VTA_GEMM_UOP_BEGIN);
+    auto upc_next = Concat(BvConst(0, upc.bit_width()-uop_begin.bit_width()), uop_begin);
+    instr.SetUpdate(upc, upc_next);
 
     // update offsets
     auto dst_offset_out_next = 
@@ -153,7 +157,9 @@ void DefineChildGEMM(Ila& m) {
 
     instr.SetUpdate(it_in, it_in + 1);
     // initiate uop cntr
-    instr.SetUpdate(upc, m.state(VTA_GEMM_UOP_BEGIN));
+    auto uop_begin = m.state(VTA_GEMM_UOP_BEGIN);
+    auto upc_next = Concat(BvConst(0, upc.bit_width()-uop_begin.bit_width()), uop_begin);
+    instr.SetUpdate(upc, upc_next);
 
     // update offsets
     auto dst_offset_in_next = 
@@ -196,7 +202,9 @@ void DefineChildGEMM(Ila& m) {
     instr.SetUpdate(acc_mem, acc_mem_next);
     instr.SetUpdate(out_mem, out_mem_next);
 
-    auto next_state = Ite(upc >= m.state(VTA_GEMM_UOP_END)-1,
+    auto uop_end = m.state(VTA_GEMM_UOP_END);
+    auto uop_end_ext = Concat(BvConst(0, upc.bit_width()-uop_end.bit_width()), uop_end);
+    auto next_state = Ite(upc >= uop_end_ext-1,
                           BvConst(VTA_CHILD_STATE_GEMM_IN_LOOP, state.bit_width()),
                           BvConst(VTA_CHILD_STATE_GEMM_READ_UOP, state.bit_width()));
     instr.SetUpdate(state, next_state);
@@ -209,7 +217,7 @@ void DefineChildGEMM(Ila& m) {
     instr.SetDecode(is_instr_valid);
 
     auto uop_mem = m.state(VTA_UOP_MEMORY);
-    auto uop = Load(uop_mem, Concat(BvConst(0, 32-upc.bit_width()), upc));
+    auto uop = Load(uop_mem, upc);
 
     // decode indices
     auto dst_idx_next = 
