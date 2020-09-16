@@ -45,10 +45,7 @@ namespace vta {
 #define VTA_CHILD_STATE_GEMM_INNER_LOOP_OC_IDX 18
 #define VTA_CHILD_STATE_GEMM_INNER_LOOP_MATMUL 19
 #define VTA_CHILD_STATE_GEMM_INNER_LOOP_UPDATE_SUM 20
-// #define VTA_CHILD_STATE_GEMM_WR_TENSOR 20
-// #define VTA_CHILD_STATE_GEMM_UPDATE_IN_OFFSET 21
-// #define VTA_CHILD_STATE_GEMM_UPDATE_OUT_OFFSET 22
-#define VTA_CHILD_STATE_GEMM_DONE 23
+#define VTA_CHILD_STATE_GEMM_DONE 21
 
 // --------------- internal states for vta load/store -------------------- //
 #define VTA_LOAD_Y_CNTR "vta_load_y_cntr"

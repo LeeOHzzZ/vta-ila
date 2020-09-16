@@ -51,8 +51,7 @@ void DefineChildGEMM(Ila& m) {
     child.NewBvState(VTA_GEMM_INNER_LOOP_IC_CNTR, VTA_GEMM_INNER_LOOP_IC_CNTR_BITWIDTH);
   auto sum_temp = 
     child.NewBvState(VTA_GEMM_MATMUL_SUM_TEMP, VTA_GEMM_MATMUL_SUM_TEMP_BITWIDTH);
-  auto accum_reg = 
-    child.NewBvState(VTA_GEMM_ACCUM_REG, VTA_GEMM_ACCUM_REG_BITWIDTH);
+
 
   // -------------- child memory states -------//
   auto w_tensor = 
@@ -96,6 +95,16 @@ void DefineChildGEMM(Ila& m) {
     instr.SetUpdate(state, next_state);
   }
 
+  { // child instruction ---- gemm done
+    auto instr = child.NewInstr("vta_child_gemm_done");
+    auto is_instr_valid = ((child_valid_flag == VTA_VALID) &
+                            (state == VTA_CHILD_STATE_GEMM_DONE));
+    instr.SetDecode(is_instr_valid);
+
+    instr.SetUpdate(state, BvConst(VTA_CHILD_STATE_IDLE, state.bit_width()));
+    instr.SetUpdate(child_valid_flag, BvConst(VTA_INVALID, 1));
+  }
+
   { // child instruction ---- increment gemm out loop parameter
     auto instr = child.NewInstr("vta_child_gemm_out_loop");
     auto is_instr_valid = ((child_valid_flag == VTA_VALID) &
@@ -104,12 +113,33 @@ void DefineChildGEMM(Ila& m) {
 
     instr.SetUpdate(it_out, it_out + 1);
     instr.SetUpdate(it_in, BvConst(0, it_in.bit_width()));
-
     // initiate uop cntr
     instr.SetUpdate(upc, m.state(VTA_GEMM_UOP_BEGIN));
+
+    // update offsets
+    auto dst_offset_out_next = 
+      dst_offset_out + Concat(BvConst(0,1), m.state(VTA_GEMM_DST_FACTOR_OUT));
+    auto src_offset_out_next = 
+      src_offset_out + Concat(BvConst(0,1), m.state(VTA_GEMM_SRC_FACTOR_OUT));
+    auto wgt_offset_out_next = 
+      wgt_offset_out + Concat(BvConst(0,1), m.state(VTA_GEMM_WGT_FACTOR_OUT));
     
+    instr.SetUpdate(dst_offset_out, dst_offset_out_next);
+    instr.SetUpdate(src_offset_out, src_offset_out_next);
+    instr.SetUpdate(wgt_offset_out, wgt_offset_out_next);
+
     auto iter_out = m.state(VTA_GEMM_ITER_OUT);
-    auto next_state = Ite(it_out >= iter_out - 1,
+    auto is_done = (it_out >= iter_out - 1);
+
+    auto dst_offset_in_next = Ite(is_done, dst_offset_in, dst_offset_out_next);
+    auto src_offset_in_next = Ite(is_done, src_offset_in, src_offset_out_next);
+    auto wgt_offset_in_next = Ite(is_done, wgt_offset_in, wgt_offset_out_next);
+    
+    instr.SetUpdate(dst_offset_in, dst_offset_in_next);
+    instr.SetUpdate(src_offset_in, src_offset_in_next);
+    instr.SetUpdate(wgt_offset_in, wgt_offset_in_next);
+    
+    auto next_state = Ite(is_done,
                           BvConst(VTA_CHILD_STATE_GEMM_DONE, state.bit_width()),
                           BvConst(VTA_CHILD_STATE_GEMM_READ_UOP, state.bit_width()));
     instr.SetUpdate(state, next_state);
@@ -124,6 +154,18 @@ void DefineChildGEMM(Ila& m) {
     instr.SetUpdate(it_in, it_in + 1);
     // initiate uop cntr
     instr.SetUpdate(upc, m.state(VTA_GEMM_UOP_BEGIN));
+
+    // update offsets
+    auto dst_offset_in_next = 
+      dst_offset_in + Concat(BvConst(0,1), m.state(VTA_GEMM_DST_FACTOR_IN));
+    auto src_offset_in_next = 
+      src_offset_in + Concat(BvConst(0,1), m.state(VTA_GEMM_SRC_FACTOR_IN));
+    auto wgt_offset_in_next = 
+      wgt_offset_in + Concat(BvConst(0,1), m.state(VTA_GEMM_WGT_FACTOR_IN));
+    
+    instr.SetUpdate(dst_offset_in, dst_offset_in_next);
+    instr.SetUpdate(src_offset_in, src_offset_in_next);
+    instr.SetUpdate(wgt_offset_in, wgt_offset_in_next);
     
     auto iter_in = m.state(VTA_GEMM_ITER_IN);
     auto next_state = Ite(it_in >= iter_in - 1,
@@ -139,6 +181,20 @@ void DefineChildGEMM(Ila& m) {
     instr.SetDecode(is_instr_valid);
 
     instr.SetUpdate(upc, upc+1);
+
+    // write accum result back to acc_mem and out_mem
+    auto acc_mem = m.state(VTA_ACCUM_MEMORY);
+    auto out_mem = m.state(VTA_OUT_MEMORY);
+    auto a_start_addr = 
+      Concat(BvConst(0, 32-dst_idx.bit_width()), dst_idx) * VTA_ACCUM_MAT_DATA_NUM;
+    auto o_start_addr = 
+      Concat(BvConst(0, 32-dst_idx.bit_width()), dst_idx) * VTA_OUT_MAT_DATA_NUM;
+    
+    auto acc_mem_next = write_tensor(acc_mem, a_tensor, a_start_addr, VTA_BATCH_SIZE*VTA_BLOCK_OUT);
+    auto out_mem_next = write_tensor(out_mem, o_tensor, o_start_addr, VTA_BATCH_SIZE*VTA_BLOCK_OUT);
+
+    instr.SetUpdate(acc_mem, acc_mem_next);
+    instr.SetUpdate(out_mem, out_mem_next);
 
     auto next_state = Ite(upc >= m.state(VTA_GEMM_UOP_END)-1,
                           BvConst(VTA_CHILD_STATE_GEMM_IN_LOOP, state.bit_width()),
@@ -224,10 +280,11 @@ void DefineChildGEMM(Ila& m) {
     instr.SetUpdate(sum_temp, BvConst(0, sum_temp.bit_width()));
 
     // update sum
-    auto accum_next = AccumAddSum(accum_reg, sum_temp);
-    instr.SetUpdate(accum_reg, accum_next);
+    auto accum = Load(a_tensor, b_cntr * oc_cntr);
+    auto accum_next = AccumAddSum(accum, sum_temp);
+
     auto a_tensor_idx = b_cntr * oc_cntr;
-    auto acc_elem_next = Ite(m.state(VTA_GEMM_RESET_FLAG),
+    auto acc_elem_next = Ite(m.state(VTA_GEMM_RESET_FLAG) == VTA_VALID,
                              BvConst(0, VTA_ACCUM_BITWIDTH), accum_next);
     instr.SetUpdate(a_tensor, Store(a_tensor, a_tensor_idx, acc_elem_next));
 
@@ -254,6 +311,8 @@ void DefineChildGEMM(Ila& m) {
     std::vector<ExprRef> mac_in = {sum_temp, wgt, inp};
     
     instr.SetUpdate(sum_temp, GemmMac(mac_in));
+
+    instr.SetUpdate(ic_cntr, ic_cntr + 1);
 
     auto next_state = 
       Ite(ic_cntr >= VTA_BLOCK_IN - 1,

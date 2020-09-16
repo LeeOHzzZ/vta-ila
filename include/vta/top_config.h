@@ -24,6 +24,11 @@ namespace vta {
 // accumulator data type signed integer width
 #define VTA_LOG_ACCUM_BITWIDTH 5
 #define VTA_ACCUM_BITWIDTH (1 << VTA_LOG_ACCUM_BITWIDTH)
+
+// TODO: confirm output size
+#define VTA_LOG_OUT_BITWIDTH VTA_LOG_INPUT_DATA_BITWIDTH
+#define VTA_OUT_BITWIDTH (1 << VTA_LOG_OUT_BITWIDTH)
+
 // VTA matrix multiply intrinsic input/output dimension 0
 #define VTA_LOG_BATCH_SIZE 0
 #define VTA_BATCH_SIZE (1 << VTA_LOG_BATCH_SIZE)
@@ -39,10 +44,6 @@ namespace vta {
 #define VTA_LOG_BLOCK_OUT VTA_LOG_BLOCK_SIZE
 #define VTA_BLOCK_IN (1 << VTA_LOG_BLOCK_IN)
 #define VTA_BLOCK_OUT (1 << VTA_LOG_BLOCK_OUT)
-
-// TODO: confirm output size
-#define VTA_LOG_OUT_BITWIDTH VTA_LOG_INPUT_DATA_BITWIDTH
-#define VTA_OUT_BITWIDTH (1 << VTA_LOG_OUT_BITWIDTH)
 
 
 
