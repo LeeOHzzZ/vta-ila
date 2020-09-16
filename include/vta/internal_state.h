@@ -9,7 +9,7 @@
 namespace ilang {
 namespace vta {
 
-// use a FSM to regulate all the child instructions
+// ------------ child instruction FSM state ------------------ //
 #define VTA_CHILD_INSTR_STATE "vta_child_instr_state"
 #define VTA_CHILD_INSTR_STATE_BITWIDTH 5
 
@@ -37,9 +37,20 @@ namespace vta {
 #define VTA_CHILD_STATE_LOAD_BIAS_X_SIZE 11
 
 #define VTA_CHILD_STATE_GEMM_START 12
+#define VTA_CHILD_STATE_GEMM_OUT_LOOP 13
+#define VTA_CHILD_STATE_GEMM_IN_LOOP 14
+#define VTA_CHILD_STATE_GEMM_UPDATE_UPC 15
+#define VTA_CHILD_STATE_GEMM_READ_UOP 16
+#define VTA_CHILD_STATE_GEMM_INNER_LOOP_BATCH_IDX 17
+#define VTA_CHILD_STATE_GEMM_INNER_LOOP_OC_IDX 18
+#define VTA_CHILD_STATE_GEMM_INNER_LOOP_MATMUL 19
+#define VTA_CHILD_STATE_GEMM_INNER_LOOP_UPDATE_SUM 20
+// #define VTA_CHILD_STATE_GEMM_WR_TENSOR 20
+// #define VTA_CHILD_STATE_GEMM_UPDATE_IN_OFFSET 21
+// #define VTA_CHILD_STATE_GEMM_UPDATE_OUT_OFFSET 22
+#define VTA_CHILD_STATE_GEMM_DONE 23
 
-// internal states for LOAD/STORE instruction
-// states for load
+// --------------- internal states for vta load/store -------------------- //
 #define VTA_LOAD_Y_CNTR "vta_load_y_cntr"
 #define VTA_LOAD_Y_CNTR_BITWIDTH (VTA_MEMOP_SIZE_BITWIDTH)
 
@@ -61,7 +72,7 @@ namespace vta {
 #define VTA_LOAD_Y_OFFSET_1 "vta_load_y_offset_1"
 #define VTA_LOAD_Y_OFFSET_1_BITWIDTH VTA_MEMOP_SRAM_ADDR_BITWIDTH
 
-// internal states for gemm
+// ---------------- internal states for vta gemm ------------------------- //
 #define VTA_GEMM_OUT_LOOP_CNTR "vta_gemm_out_loop_cntr"
 #define VTA_GEMM_OUT_LOOP_CNTR_BITWIDTH VTA_LOOP_ITER_WIDTH
 
@@ -70,6 +81,76 @@ namespace vta {
 
 #define VTA_GEMM_UOP_CNTR "vta_gemm_uop_cntr"
 #define VTA_GEMM_UOP_CNTR_BITWIDTH VTA_LOG_UOP_BUFF_DEPTH
+
+#define VTA_GEMM_DST_IDX "vta_gemm_dst_idx"
+#define VTA_GEMM_DST_IDX_BITWIDTH \
+  (VTA_LOG_ACC_BUFF_DEPTH + 1)
+
+#define VTA_GEMM_SRC_IDX "vta_gemm_src_idx"
+#define VTA_GEMM_SRC_IDX_BITWIDTH \
+  (VTA_LOG_INP_BUFF_DEPTH + 1)
+
+#define VTA_GEMM_WGT_IDX "vta_gemm_wgt_idx"
+#define VTA_GEMM_WGT_IDX_BITWIDTH \
+  (VTA_LOG_WGT_BUFF_DEPTH + 1)
+
+#define VTA_GEMM_DST_OFFSET_OUT "vta_gemm_dst_offset_out"
+#define VTA_GEMM_DST_OFFSET_OUT_BITWIDTH VTA_GEMM_DST_IDX_BITWIDTH
+
+#define VTA_GEMM_SRC_OFFSET_OUT "vta_gemm_src_offset_out"
+#define VTA_GEMM_SRC_OFFSET_OUT_BITWIDTH VTA_GEMM_SRC_IDX_BITWIDTH
+
+#define VTA_GEMM_WGT_OFFSET_OUT "vta_gemm_wgt_offset_out"
+#define VTA_GEMM_WGT_OFFSET_OUT_BITWIDTH VTA_GEMM_WGT_IDX_BITWIDTH
+
+#define VTA_GEMM_DST_OFFSET_IN "vta_gemm_dst_offset_in"
+#define VTA_GEMM_DST_OFFSET_IN_BITWIDTH VTA_GEMM_DST_IDX_BITWIDTH
+
+#define VTA_GEMM_SRC_OFFSET_IN "vta_gemm_src_offset_in"
+#define VTA_GEMM_SRC_OFFSET_IN_BITWIDTH VTA_GEMM_SRC_IDX_BITWIDTH
+
+#define VTA_GEMM_WGT_OFFSET_IN "vta_gemm_wgt_offset_in"
+#define VTA_GEMM_WGT_OFFSET_IN_BITWIDTH VTA_GEMM_WGT_IDX_BITWIDTH
+
+#define VTA_GEMM_INNER_LOOP_BATCH_CNTR "vta_gemm_inner_loop_batch_cntr"
+#define VTA_GEMM_INNER_LOOP_BATCH_CNTR_BITWIDTH VTA_MEMORY_ADDR_BITWIDTH
+
+#define VTA_GEMM_INNER_LOOP_OC_CNTR "vta_gemm_inner_loop_oc_cntr"
+#define VTA_GEMM_INNER_LOOP_OC_CNTR_BITWIDTH VTA_MEMORY_ADDR_BITWIDTH
+
+#define VTA_GEMM_INNER_LOOP_IC_CNTR "vta_gemm_inner_loop_ic_cntr"
+#define VTA_GEMM_INNER_LOOP_IC_CNTR_BITWIDTH VTA_MEMORY_ADDR_BITWIDTH
+
+#define VTA_GEMM_MATMUL_SUM_TEMP "vta_gemm_matmul_sum_temp"
+#define VTA_GEMM_MATMUL_SUM_TEMP_BITWIDTH \
+  (VTA_WEIGHT_BITWIDTH + VTA_INPUT_DATA_BITWIDTH + VTA_LOG_BLOCK_IN + 1)
+
+#define VTA_GEMM_ACCUM_REG "vta_gemm_accum_reg"
+#define VTA_GEMM_ACCUM_REG_BITWIDTH VTA_ACCUM_BITWIDTH
+
+// #define VTA_GEMM_UOP "vta_gemm_uop"
+// #define VTA_GEMM_UOP_BITWIDTH VTA_UOP_BITWIDTH
+
+
+// gemm tensor memory
+#define VTA_GEMM_WGT_TENSOR "vta_gemm_wgt_tensor"
+#define VTA_GEMM_WGT_TENSOR_ENTRY_NUM (VTA_BLOCK_OUT * VTA_BLOCK_IN)
+#define VTA_GEMM_WGT_TENSOR_DATA_BTIWIDTH VTA_WEIGHT_BITWIDTH
+
+#define VTA_GEMM_INP_TENSOR "vta_gemm_inp_tensor"
+#define VTA_GEMM_INP_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_IN)
+#define VTA_GEMM_INP_TENSOR_DATA_BITWIDTH VTA_INPUT_DATA_BITWIDTH
+
+#define VTA_GEMM_ACCUM_TENSOR "vta_gemm_accum_tensor"
+#define VTA_GEMM_ACCUM_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+#define VTA_GEMM_ACCUM_TENSOR_DATA_BITWIDTH VTA_ACCUM_BITWIDTH
+
+#define VTA_GEMM_OUT_TENSOR "vta_gemm_out_tensor"
+#define VTA_GEMM_OUT_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+#define VTA_GEMM_OUT_TENSOR_DATA_BITWIDTH VTA_OUT_BITWIDTH
+
+
+
 
 
 

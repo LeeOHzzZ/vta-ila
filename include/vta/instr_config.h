@@ -69,27 +69,7 @@ namespace vta {
 /*! ALU Instruction: multiply arg bitwidth*/
 #define VTA_MUL_ARG_BIT_WIDTH 8
 
-// /*! GEMM Micro-op start position of the acc_idx field */
-// #define VTA_UOP_GEM_0_0 0
-// /*! GEMM Micro-op end position of the acc_idx field */
-// #define VTA_UOP_GEM_0_1 (VTA_UOP_GEM_0_0 + VTA_LOG_ACC_BUFF_DEPTH - 1)
-// /*! GEMM Micro-op start position of the inp_idx field */
-// #define VTA_UOP_GEM_1_0 (VTA_UOP_GEM_0_1 + 1)
-// /*! GEMM Micro-op end position of the inp_idx field */
-// #define VTA_UOP_GEM_1_1 (VTA_UOP_GEM_1_0 + VTA_LOG_INP_BUFF_DEPTH - 1)
-// /*! GEMM Micro-op start position of the wgt_idx field */
-// #define VTA_UOP_GEM_2_0 (VTA_UOP_GEM_1_1 + 1)
-// /*! GEMM Micro-op end position of the wgt_idx field */
-// #define VTA_UOP_GEM_2_1 (VTA_UOP_GEM_2_0 + VTA_LOG_WGT_BUFF_DEPTH - 1)
 
-// /*! GEMM Micro-op start position of the acc_idx field */
-// #define VTA_UOP_ALU_0_0 0
-// /*! GEMM Micro-op end position of the acc_idx field */
-// #define VTA_UOP_ALU_0_1 (VTA_UOP_ALU_0_0 + VTA_LOG_ACC_BUFF_DEPTH - 1)
-// /*! GEMM Micro-op start position of the inp_idx field */
-// #define VTA_UOP_ALU_1_0 (VTA_UOP_ALU_0_1 + 1)
-// /*! GEMM Micro-op end position of the inp_idx field */
-// #define VTA_UOP_ALU_1_1 (VTA_UOP_ALU_1_0 + VTA_LOG_INP_BUFF_DEPTH - 1)
 
 
 } // namespace vta

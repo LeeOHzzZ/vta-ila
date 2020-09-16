@@ -214,8 +214,10 @@ void DefineInstr(Ila& m) {
 
     // extract parameters from the instruction
     // skip unused parameter
-    ins_temp = ins_temp >> 5;
+    ins_temp = ins_temp >> 4;
 
+    auto reset_flag = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_GEMM_RESET_FLAG_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_GEMM_UOP_BEGIN_BITWIDTH-1, 0);
     ins_temp >> VTA_GEMM_UOP_BEGIN_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_GEMM_UOP_END_BITWIDTH-1, 0);
@@ -237,6 +239,7 @@ void DefineInstr(Ila& m) {
     auto wgt_factor_in = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_IN_BITWIDTH-1, 0);
     ins_temp >> VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
 
+    instr.SetUpdate(m.state(VTA_GEMM_RESET_FLAG), reset_flag);
     instr.SetUpdate(m.state(VTA_GEMM_UOP_BEGIN), uop_bgn);
     instr.SetUpdate(m.state(VTA_GEMM_UOP_END), uop_end);
     instr.SetUpdate(m.state(VTA_GEMM_ITER_OUT), iter_out);

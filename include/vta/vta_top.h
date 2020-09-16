@@ -12,6 +12,7 @@
 #include <vta/memory_map.h>
 #include <vta/instr_param.h>
 #include <vta/internal_state.h>
+#include <vta/util.h>
 
 
 namespace ilang {
