@@ -76,6 +76,35 @@ namespace vta {
 #define VTA_ALU_UOP_BEGIN "vta_alu_uop_begin"
 #define VTA_ALU_UOP_BEGIN_BITWIDTH VTA_LOG_UOP_BUFF_DEPTH
 
+#define VTA_ALU_UOP_END "vta_alu_uop_end"
+#define VTA_ALU_UOP_END_BITWIDTH (VTA_LOG_UOP_BUFF_DEPTH + 1)
+
+#define VTA_ALU_ITER_OUT "vta_alu_iter_out"
+#define VTA_ALU_ITER_OUT_BITWIDTH VTA_LOOP_ITER_WIDTH
+
+#define VTA_ALU_ITER_IN "vta_alu_iter_in"
+#define VTA_ALU_ITER_IN_BITWIDTH VTA_LOOP_ITER_WIDTH
+
+#define VTA_ALU_DST_FACTOR_OUT "vta_alu_dst_factor_out"
+#define VTA_ALU_DST_FACTOR_OUT_BITWIDTH VTA_LOG_ACC_BUFF_DEPTH
+
+#define VTA_ALU_DST_FACTOR_IN "vta_alu_dst_factor_in"
+#define VTA_ALU_DST_FACTOR_IN_BITWIDTH VTA_LOG_ACC_BUFF_DEPTH
+
+#define VTA_ALU_SRC_FACTOR_OUT "vta_alu_src_factor_out"
+#define VTA_ALU_SRC_FACTOR_OUT_BITWIDTH VTA_LOG_INP_BUFF_DEPTH
+
+#define VTA_ALU_SRC_FACTOR_IN "vta_alu_src_factor_in"
+#define VTA_ALU_SRC_FACTOR_IN_BITWIDTH VTA_LOG_INP_BUFF_DEPTH
+
+#define VTA_ALU_OPCODE "vta_alu_opcode"
+
+#define VTA_ALU_USE_IMM_FLAG "vta_alu_use_imm_flag"
+#define VTA_ALU_USE_IMM_FLAG_BITWIDTH 1
+
+#define VTA_ALU_IMM "vta_alu_imm"
+#define VTA_ALU_IMM_BITWIDTH VTA_ALUOP_IMM_BIT_WIDTH
+
 
 
 /*! GEMM Micro-op start position of the acc_idx field */

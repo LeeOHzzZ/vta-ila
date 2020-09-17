@@ -20,6 +20,7 @@ Ila GetVtaIla(const std::string& model_name) {
   DefineChild(m);
   DefineChildInstrLoad(m);
   DefineChildGEMM(m);
+  DefineChildALU(m);
 
   return m;
 }

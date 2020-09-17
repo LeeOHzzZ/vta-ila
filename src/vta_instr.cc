@@ -257,18 +257,217 @@ void DefineInstr(Ila& m) {
                     BvConst(VTA_CHILD_STATE_GEMM_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
   }
 
-  // { // vta instruction of ALU --- MAX
-  //   auto instr = m.NewInstr("vta_alu");
-  //   auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
+  { // vta instruction of ALU --- MAX
+    auto instr = m.NewInstr("vta_alu_max");
+    auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
 
-  //   // skip unused parameters
-  //   ins_temp = ins_temp >> 4;
+    // skip unused parameters
+    ins_temp = ins_temp >> 4;
     
-  //   auto reset_flag = SelectBit(ins_temp, 0);
-  //   ins_temp >> 
+    auto reset_flag = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    auto use_imm = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
 
-  // }
+    auto is_max = (alu_opcode == VTA_ALU_OPCODE_MAX);
+    instr.SetDecode(is_opcode_alu & is_max);
 
+    instr.SetUpdate(m.state(VTA_ALU_RESET_FLAG), reset_flag);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_BEGIN), uop_bgn);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_END), uop_end);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_OUT), iter_out);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_IN), iter_in);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_OUT), dst_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_IN), dst_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_OUT), src_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_IN), src_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_OPCODE), alu_opcode);
+    instr.SetUpdate(m.state(VTA_ALU_USE_IMM_FLAG), use_imm);
+    instr.SetUpdate(m.state(VTA_ALU_IMM), imm);
+
+    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG), 
+                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+                    BvConst(VTA_CHILD_STATE_ALU_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
+  }
+
+  { // vta instruction of ALU --- MIN
+    auto instr = m.NewInstr("vta_alu_min");
+    auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
+
+    // skip unused parameters
+    ins_temp = ins_temp >> 4;
+    
+    auto reset_flag = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    auto use_imm = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
+
+    auto is_min = (alu_opcode == VTA_ALU_OPCODE_MIN);
+    instr.SetDecode(is_opcode_alu & is_min);
+
+    instr.SetUpdate(m.state(VTA_ALU_RESET_FLAG), reset_flag);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_BEGIN), uop_bgn);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_END), uop_end);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_OUT), iter_out);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_IN), iter_in);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_OUT), dst_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_IN), dst_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_OUT), src_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_IN), src_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_OPCODE), alu_opcode);
+    instr.SetUpdate(m.state(VTA_ALU_USE_IMM_FLAG), use_imm);
+    instr.SetUpdate(m.state(VTA_ALU_IMM), imm);
+
+    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG), 
+                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+                    BvConst(VTA_CHILD_STATE_ALU_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
+  }
+
+  { // vta instruction of ALU --- ADD
+    auto instr = m.NewInstr("vta_alu_add");
+    auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
+
+    // skip unused parameters
+    ins_temp = ins_temp >> 4;
+    
+    auto reset_flag = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    auto use_imm = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
+
+    auto is_add = (alu_opcode == VTA_ALU_OPCODE_ADD);
+    instr.SetDecode(is_opcode_alu & is_add);
+
+    instr.SetUpdate(m.state(VTA_ALU_RESET_FLAG), reset_flag);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_BEGIN), uop_bgn);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_END), uop_end);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_OUT), iter_out);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_IN), iter_in);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_OUT), dst_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_IN), dst_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_OUT), src_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_IN), src_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_OPCODE), alu_opcode);
+    instr.SetUpdate(m.state(VTA_ALU_USE_IMM_FLAG), use_imm);
+    instr.SetUpdate(m.state(VTA_ALU_IMM), imm);
+
+    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG), 
+                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+                    BvConst(VTA_CHILD_STATE_ALU_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
+  }
+
+  { // vta instruction of ALU --- SHR
+    auto instr = m.NewInstr("vta_alu_shr");
+    auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
+
+    // skip unused parameters
+    ins_temp = ins_temp >> 4;
+    
+    auto reset_flag = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
+    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    auto use_imm = SelectBit(ins_temp, 0);
+    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
+
+    auto is_shr = (alu_opcode == VTA_ALU_OPCODE_MAX);
+    instr.SetDecode(is_opcode_alu & is_shr);
+
+    instr.SetUpdate(m.state(VTA_ALU_RESET_FLAG), reset_flag);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_BEGIN), uop_bgn);
+    instr.SetUpdate(m.state(VTA_ALU_UOP_END), uop_end);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_OUT), iter_out);
+    instr.SetUpdate(m.state(VTA_ALU_ITER_IN), iter_in);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_OUT), dst_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_DST_FACTOR_IN), dst_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_OUT), src_factor_out);
+    instr.SetUpdate(m.state(VTA_ALU_SRC_FACTOR_IN), src_factor_in);
+    instr.SetUpdate(m.state(VTA_ALU_OPCODE), alu_opcode);
+    instr.SetUpdate(m.state(VTA_ALU_USE_IMM_FLAG), use_imm);
+    instr.SetUpdate(m.state(VTA_ALU_IMM), imm);
+
+    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG), 
+                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+                    BvConst(VTA_CHILD_STATE_ALU_START, VTA_CHILD_INSTR_STATE_BITWIDTH));
+  }
 
 }
 

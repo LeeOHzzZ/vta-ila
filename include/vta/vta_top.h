@@ -35,6 +35,8 @@ void DefineChild(Ila& m);
 void DefineChildInstrLoad(Ila& m);
 // define child instruction for GEMM
 void DefineChildGEMM(Ila& m);
+// define child instruction for alu
+void DefineChildALU(Ila& m);
 
 } // namespace vta
 }; // namespace ilang

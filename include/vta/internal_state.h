@@ -11,7 +11,7 @@ namespace vta {
 
 // ------------ child instruction FSM state ------------------ //
 #define VTA_CHILD_INSTR_STATE "vta_child_instr_state"
-#define VTA_CHILD_INSTR_STATE_BITWIDTH 5
+#define VTA_CHILD_INSTR_STATE_BITWIDTH 6
 
 #define VTA_CHILD_VALID_FLAG "vta_child_instr_valid_flag"
 #define VTA_CHILD_VALID_FLAG_BITWIDTH 1
@@ -46,6 +46,16 @@ namespace vta {
 #define VTA_CHILD_STATE_GEMM_INNER_LOOP_MATMUL 19
 #define VTA_CHILD_STATE_GEMM_INNER_LOOP_UPDATE_SUM 20
 #define VTA_CHILD_STATE_GEMM_DONE 21
+
+#define VTA_CHILD_STATE_ALU_START 22
+#define VTA_CHILD_STATE_ALU_OUT_LOOP 23
+#define VTA_CHILD_STATE_ALU_IN_LOOP 24
+#define VTA_CHILD_STATE_ALU_UPDATE_UPC 25
+#define VTA_CHILD_STATE_ALU_READ_UOP 26
+#define VTA_CHILD_STATE_ALU_IN_LOOP_BATCH_IDX 27
+#define VTA_CHILD_STATE_ALU_IN_LOOP_BLOCK_IDX 28
+#define VTA_CHILD_STATE_ALU_COMPUTE 29
+#define VTA_CHILD_STATE_ALU_DONE 33
 
 // --------------- internal states for vta load/store -------------------- //
 #define VTA_LOAD_Y_CNTR "vta_load_y_cntr"
@@ -125,10 +135,6 @@ namespace vta {
 #define VTA_GEMM_ACCUM_REG "vta_gemm_accum_reg"
 #define VTA_GEMM_ACCUM_REG_BITWIDTH VTA_ACCUM_BITWIDTH
 
-// #define VTA_GEMM_UOP "vta_gemm_uop"
-// #define VTA_GEMM_UOP_BITWIDTH VTA_UOP_BITWIDTH
-
-
 // gemm tensor memory
 #define VTA_GEMM_WGT_TENSOR "vta_gemm_wgt_tensor"
 #define VTA_GEMM_WGT_TENSOR_ENTRY_NUM (VTA_BLOCK_OUT * VTA_BLOCK_IN)
@@ -146,8 +152,54 @@ namespace vta {
 #define VTA_GEMM_OUT_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_OUT)
 #define VTA_GEMM_OUT_TENSOR_DATA_BITWIDTH VTA_OUT_BITWIDTH
 
+// ----------------- internal states for alu ------------------- //
+#define VTA_ALU_OUT_LOOP_CNTR "vta_alu_out_loop_cntr"
+#define VTA_ALU_OUT_LOOP_CNTR_BITWIDTH VTA_LOOP_ITER_WIDTH
 
+#define VTA_ALU_IN_LOOP_CNTR "vta_alu_in_loop_cntr"
+#define VTA_ALU_IN_LOOP_CNTR_BTIWIDT VTA_LOOP_ITER_WIDTH
 
+#define VTA_ALU_UOP_CNTR "vta_alu_uop_cntr"
+#define VTA_ALU_UOP_CNTR_BITWIDTH VTA_MEMORY_ADDR_BITWIDTH
+
+#define VTA_ALU_DST_IDX "vta_alu_dst_idx"
+#define VTA_ALU_DST_IDX_BITWIDTH (VTA_LOG_ACC_BUFF_DEPTH + 1)
+
+#define VTA_ALU_SRC_IDX "vta_alu_src_idx"
+#define VTA_ALU_SRC_IDX_BITWIDTH (VTA_LOG_INP_BUFF_DEPTH + 1)
+
+#define VTA_ALU_DST_OFFSET_OUT "vta_alu_dst_offset_out"
+#define VTA_ALU_DST_OFFSET_OUT_BITWIDTH VTA_ALU_DST_IDX_BITWIDTH
+
+#define VTA_ALU_DST_OFFSET_IN "vta_alu_dst_offset_in"
+#define VTA_ALU_DST_OFFSET_IN_BITWIDTH VTA_ALU_DST_IDX_BITWIDTH
+
+#define VTA_ALU_SRC_OFFSET_IN "vta_alu_src_offset_in"
+#define VTA_ALU_SRC_OFFSET_IN_BITWIDTH VTA_ALU_SRC_IDX_BITWIDTH
+
+#define VTA_ALU_SRC_OFFSET_OUT "vta_alu_src_offset_out"
+#define VTA_ALU_SRC_OFFSET_OUT_BITWIDTH VTA_ALU_SRC_IDX_BITWIDTH
+
+#define VTA_ALU_IN_LOOP_BATCH_CNTR "vta_alu_in_loop_batch_cntr"
+#define VTA_ALU_IN_LOOP_BATCH_CNTR_BITWIDTH VTA_MEMORY_ADDR_BITWIDTH
+
+#define VTA_ALU_IN_LOOP_BLOCK_CNTR "vta_alu_in_loop_block_cntr"
+#define VTA_ALU_IN_LOOP_BLOCK_CNTR_BITWIDTH VTA_MEMORY_ADDR_BITWIDTH
+
+#define VTA_ALU_SHR_ARG_BITWIDTH VTA_LOG_ACCUM_BITWIDTH
+
+// ALU MEMORY STATES
+#define VTA_ALU_SRC_TENSOR "vta_alu_src_tensor"
+#define VTA_ALU_SRC_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+#define VTA_ALU_SRC_TENSOR_DATA_BITWIDTH VTA_ACCUM_BITWIDTH
+
+#define VTA_ALU_DST_TENSOR "vta_alu_dst_tensor"
+#define VTA_ALU_DST_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+#define VTA_ALU_DST_TENSOR_DATA_BITWIDTH VTA_ACCUM_BITWIDTH
+
+#define VTA_ALU_OUT_TENSOR "vta_alu_out_tensor"
+#define VTA_ALU_OUT_TENSOR_ENTRY_NUM (VTA_BATCH_SIZE * VTA_BLOCK_OUT)
+#define VTA_ALU_OUT_TENSOR_DATA_BITWIDTH VTA_OUT_BITWIDTH
 
 
 

@@ -35,6 +35,7 @@ add_executable(${MyTarget}
   src/vta_instr.cc
   src/child_instr_load.cc
   src/child_instr_gemm.cc
+  src/child_instr_alu.cc
 )
 
 target_include_directories(${MyTarget} PRIVATE include)
