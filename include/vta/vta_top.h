@@ -29,6 +29,9 @@ void DefineInternalState(Ila& m);
 
 // define instructions
 void DefineInstr(Ila& m);
+// define store instruction for virtual memory
+void DefineVirMemInstr(Ila& m);
+
 // define child
 void DefineChild(Ila& m);
 // define child instructions for load instruction

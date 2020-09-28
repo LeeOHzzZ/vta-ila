@@ -8,15 +8,14 @@ namespace ilang {
 namespace vta {
 
 void DefineInstr(Ila& m) {
-  
-  auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
-  auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
-  // use ins_temp for slicing instructions parameters
-  auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
-  
+    
   { // instruction load
     // load weights
     auto instr = m.NewInstr("vta_load_wgt");
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
     // skip unused parameters
     ins_temp = ins_temp >> 4;
     
@@ -30,19 +29,24 @@ void DefineInstr(Ila& m) {
 
     // decode instruction parameters from the instruction
     auto sram_base = Extract(ins_temp, VTA_MEMOP_SRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
     
     auto dram_base = Extract(ins_temp, VTA_MEMOP_DRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+
+    auto unused_bits = (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH  - 4 - VTA_MEMOP_ID_BITWIDTH - 
+                        VTA_MEMOP_SRAM_ADDR_BITWIDTH - VTA_MEMOP_DRAM_ADDR_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
     
     auto y_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
     
     auto x_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
 
     auto x_stride = Extract(ins_temp, VTA_MEMOP_STRIDE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
     
     instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
     instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
@@ -60,6 +64,12 @@ void DefineInstr(Ila& m) {
 
   { // instruction load inputs
     auto instr = m.NewInstr("vta_load_input");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     // skip unused parameters
     ins_temp = ins_temp >> 4;
 
@@ -73,19 +83,24 @@ void DefineInstr(Ila& m) {
 
     // decode instruction parameters from the instruction
     auto sram_base = Extract(ins_temp, VTA_MEMOP_SRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
     
     auto dram_base = Extract(ins_temp, VTA_MEMOP_DRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+
+    auto unused_bits = (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH  - 4 - VTA_MEMOP_ID_BITWIDTH - 
+                        VTA_MEMOP_SRAM_ADDR_BITWIDTH - VTA_MEMOP_DRAM_ADDR_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
     
     auto y_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
     
     auto x_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
 
     auto x_stride = Extract(ins_temp, VTA_MEMOP_STRIDE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
 
     auto y_pad_0 = Extract(ins_temp, VTA_MEMOP_PAD_BITWIDTH-1, 0);
     auto y_pad_1 = Extract(ins_temp, 2*VTA_MEMOP_PAD_BITWIDTH-1, VTA_MEMOP_PAD_BITWIDTH);
@@ -132,6 +147,12 @@ void DefineInstr(Ila& m) {
 
   { // instruction load uops
     auto instr = m.NewInstr("vta_load_uop");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     // skip unused parameters
     ins_temp = ins_temp >> 4;
 
@@ -144,13 +165,18 @@ void DefineInstr(Ila& m) {
     instr.SetDecode(is_opcode_load & is_uop);
 
     auto sram_base = Extract(ins_temp, VTA_MEMOP_SRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
     
     auto dram_base = Extract(ins_temp, VTA_MEMOP_DRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+
+    auto unused_bits = (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH  - 4 - VTA_MEMOP_ID_BITWIDTH - 
+                        VTA_MEMOP_SRAM_ADDR_BITWIDTH - VTA_MEMOP_DRAM_ADDR_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
 
     // omit the y_size, which is unused
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
     auto x_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
 
     instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
@@ -166,6 +192,12 @@ void DefineInstr(Ila& m) {
 
   { // instruction load_bias
     auto instr = m.NewInstr("vta_load_bias");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     // skip unused parameters
     ins_temp = ins_temp >> 4;
 
@@ -178,19 +210,24 @@ void DefineInstr(Ila& m) {
 
     // decode instruction parameters from the instruction
     auto sram_base = Extract(ins_temp, VTA_MEMOP_SRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
     
     auto dram_base = Extract(ins_temp, VTA_MEMOP_DRAM_ADDR_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+
+    auto unused_bits = (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH  - 4 - VTA_MEMOP_ID_BITWIDTH - 
+                        VTA_MEMOP_SRAM_ADDR_BITWIDTH - VTA_MEMOP_DRAM_ADDR_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
     
     auto y_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
     
     auto x_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
 
     auto x_stride = Extract(ins_temp, VTA_MEMOP_STRIDE_BITWIDTH-1, 0);
-    ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
     
     instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
     instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
@@ -209,6 +246,12 @@ void DefineInstr(Ila& m) {
 
   { // vta instruction for GEMM
     auto instr = m.NewInstr("vta_gemm");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     auto is_opcode_gemm = (opcode == VTA_OPCODE_GEMM);
     instr.SetDecode(is_opcode_gemm);
 
@@ -217,27 +260,34 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> 4;
 
     auto reset_flag = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_GEMM_RESET_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_RESET_FLAG_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_GEMM_UOP_BEGIN_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_UOP_BEGIN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_UOP_BEGIN_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_GEMM_UOP_END_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_UOP_END_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_UOP_END_BITWIDTH;
     auto iter_out = Extract(ins_temp, VTA_GEMM_ITER_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_ITER_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_ITER_OUT_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_GEMM_ITER_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_ITER_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_ITER_IN_BITWIDTH;
+
+    auto unused_bits = 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_GEMM_UOP_BEGIN_BITWIDTH - 
+       VTA_GEMM_UOP_END_BITWIDTH - VTA_GEMM_ITER_OUT_BITWIDTH - VTA_GEMM_ITER_IN_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
+
     auto dst_factor_out = Extract(ins_temp, VTA_GEMM_DST_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_DST_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_GEMM_DST_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_DST_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_DST_FACTOR_IN_BITWIDTH;
     auto src_factor_out = Extract(ins_temp, VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH;
     auto src_factor_in = Extract(ins_temp, VTA_GEMM_SRC_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_SRC_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_SRC_FACTOR_IN_BITWIDTH;
     auto wgt_factor_out = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH;
     auto wgt_factor_in = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
 
     instr.SetUpdate(m.state(VTA_GEMM_RESET_FLAG), reset_flag);
     instr.SetUpdate(m.state(VTA_GEMM_UOP_BEGIN), uop_bgn);
@@ -259,33 +309,46 @@ void DefineInstr(Ila& m) {
 
   { // vta instruction of ALU --- MAX
     auto instr = m.NewInstr("vta_alu_max");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
 
     // skip unused parameters
     ins_temp = ins_temp >> 4;
     
     auto reset_flag = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
     auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+
+    auto unused_bits = 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+       VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
+
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
     auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
     auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
     auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
     auto use_imm = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
     auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
 
     auto is_max = (alu_opcode == VTA_ALU_OPCODE_MAX);
@@ -312,33 +375,46 @@ void DefineInstr(Ila& m) {
 
   { // vta instruction of ALU --- MIN
     auto instr = m.NewInstr("vta_alu_min");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
 
     // skip unused parameters
     ins_temp = ins_temp >> 4;
     
     auto reset_flag = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
     auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+
+    auto unused_bits = 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+       VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
+
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
     auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
     auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
     auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
     auto use_imm = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
     auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
 
     auto is_min = (alu_opcode == VTA_ALU_OPCODE_MIN);
@@ -365,33 +441,46 @@ void DefineInstr(Ila& m) {
 
   { // vta instruction of ALU --- ADD
     auto instr = m.NewInstr("vta_alu_add");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
 
     // skip unused parameters
     ins_temp = ins_temp >> 4;
     
     auto reset_flag = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
     auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+
+    auto unused_bits = 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+       VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
+
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
     auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
     auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
     auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
     auto use_imm = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
     auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
 
     auto is_add = (alu_opcode == VTA_ALU_OPCODE_ADD);
@@ -418,33 +507,46 @@ void DefineInstr(Ila& m) {
 
   { // vta instruction of ALU --- SHR
     auto instr = m.NewInstr("vta_alu_shr");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
     auto is_opcode_alu = (opcode == VTA_OPCODE_ALU);
 
     // skip unused parameters
     ins_temp = ins_temp >> 4;
     
     auto reset_flag = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+
+    auto unused_bits = 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+       VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
+    
     auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
     auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
     auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
     auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
-    ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
     auto use_imm = SelectBit(ins_temp, 0);
-    ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    ins_temp = ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
     auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
 
     auto is_shr = (alu_opcode == VTA_ALU_OPCODE_MAX);

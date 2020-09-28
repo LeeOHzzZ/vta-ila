@@ -36,6 +36,7 @@ add_executable(${MyTarget}
   src/child_instr_load.cc
   src/child_instr_gemm.cc
   src/child_instr_alu.cc
+  src/vir_mem_store.cc
 )
 
 target_include_directories(${MyTarget} PRIVATE include)

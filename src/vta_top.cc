@@ -22,6 +22,8 @@ Ila GetVtaIla(const std::string& model_name) {
   DefineChildGEMM(m);
   DefineChildALU(m);
 
+  DefineVirMemInstr(m);
+
   return m;
 }
 

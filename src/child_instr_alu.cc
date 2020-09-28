@@ -296,7 +296,7 @@ void DefineChildALU(Ila& m) {
   }
 
   { // instruction alu compute ---- shr
-    auto instr = child.NewInstr("vta_child_alu_compute_add");
+    auto instr = child.NewInstr("vta_child_alu_compute_shr");
     auto is_instr_valid = ((child_valid_flag == VTA_VALID) &
                             (state == VTA_CHILD_STATE_ALU_COMPUTE) &
                             (alu_opcode == VTA_ALU_OPCODE_SHR));
