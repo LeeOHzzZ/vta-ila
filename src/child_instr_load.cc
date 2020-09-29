@@ -84,9 +84,9 @@ void DefineChildInstrLoad(Ila& m) {
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_WGT_MAT_DATA_NUM; i++) {
-      sram_addr = sram_addr + i;
-      dram_addr = dram_addr + i;
-      sram_next = Store(sram_next, sram_addr, Load(dram, dram_addr));
+      // sram_addr = sram_addr + i;
+      // dram_addr = dram_addr + i;
+      sram_next = Store(sram_next, sram_addr+i, Load(dram, dram_addr+i));
     }
 
     instr.SetUpdate(sram, sram_next);
@@ -133,8 +133,8 @@ void DefineChildInstrLoad(Ila& m) {
     auto sram_next = sram;
 
     for (auto i = 0; i < VTA_INP_MAT_DATA_NUM; i++) {
-      sram_addr = sram_addr + i;
-      sram_next = Store(sram_next, sram_addr, BvConst(0, VTA_INPUT_MEMORY_DATA_BITWIDTH));
+      // sram_addr = sram_addr + i;
+      sram_next = Store(sram_next, sram_addr+i, BvConst(0, VTA_INPUT_MEMORY_DATA_BITWIDTH));
     }
 
     // update data states
@@ -391,15 +391,15 @@ void DefineChildInstrLoad(Ila& m) {
     sram_addr = sram_addr + x_cntr_32 * VTA_ACCUM_MAT_DATA_NUM;
     dram_addr = dram_addr + x_cntr_32 * VTA_ACCUM_MAT_DATA_NUM;
 
+    // TODO: dram addr don't need to add dram base for current simulation?
+
     auto sram = m.state(VTA_ACCUM_MEMORY);
     auto sram_next = sram;
     auto dram = m.state(VTA_VIRTUAL_DRAM_BIAS);
     auto dram_next = dram;
 
     for (auto i = 0; i < VTA_ACCUM_MAT_DATA_NUM; i++) {
-      sram_addr = sram_addr + i;
-      dram_addr = dram_addr + i;
-      sram_next = Store(sram_next, sram_addr, Load(dram, dram_addr));
+      sram_next = Store(sram_next, sram_addr+i, Load(dram, dram_addr+i));
     }
 
     instr.SetUpdate(sram, sram_next);

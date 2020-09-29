@@ -162,7 +162,10 @@ void DefineInstr(Ila& m) {
     auto is_opcode_load = (opcode == VTA_OPCODE_LOAD);
     auto is_uop = (memory_type == VTA_MEM_ID_UOP);
 
-    instr.SetDecode(is_opcode_load & is_uop);
+    // work-around for non-effective set valid function
+    auto valid_instr = (vta_ins_in > BvConst(0, VTA_INSTR_BITWIDTH));
+
+    instr.SetDecode(is_opcode_load & is_uop & valid_instr);
 
     auto sram_base = Extract(ins_temp, VTA_MEMOP_SRAM_ADDR_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
@@ -271,7 +274,7 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_GEMM_ITER_IN_BITWIDTH;
 
     auto unused_bits = 
-      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_GEMM_UOP_BEGIN_BITWIDTH - 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_GEMM_UOP_BEGIN_BITWIDTH - 
        VTA_GEMM_UOP_END_BITWIDTH - VTA_GEMM_ITER_OUT_BITWIDTH - VTA_GEMM_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
@@ -332,7 +335,7 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
 
     auto unused_bits = 
-      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
        VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
@@ -398,7 +401,7 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
 
     auto unused_bits = 
-      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
        VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
@@ -464,10 +467,11 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
 
     auto unused_bits = 
-      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
        VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
+    ILA_INFO << "unused_bits for add: " << unused_bits;
 
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
@@ -526,11 +530,11 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
 
     auto unused_bits = 
-      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
+      (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
        VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
-    
+
     auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);

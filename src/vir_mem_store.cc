@@ -23,7 +23,7 @@ void DefineVirMemInstr(Ila& m) {
 
   { // instruction for writing weight data
     auto instr = m.NewInstr("vir_wr_wgt");
-    instr.SetDecode(mode == VTA_VIR_MEM_MODE_WR_BIAS);
+    instr.SetDecode(mode == VTA_VIR_MEM_MODE_WR_WGT);
 
     auto wgt_mem = m.state(VTA_VIRTUAL_DRAM_WEIGHT);
     auto addr = m.input(VTA_VIR_MEM_ADDR_IN);

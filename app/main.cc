@@ -46,6 +46,8 @@ int main() {
   ILA_INFO << "SRC_FACTOR: " << VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
   ILA_INFO << "WGT_FACTOR: " << VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
 
+  ILA_INFO << "DRAM_BIAS_ENTRY_NUM: " << VTA_VIRTUAL_DRAM_BIAS_ENTRY_NUM;
+
   ExportSysCSim(vta, "./sim_model", false);
 
   return 0;

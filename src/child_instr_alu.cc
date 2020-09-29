@@ -76,6 +76,16 @@ void DefineChildALU(Ila& m) {
     instr.SetUpdate(state, next_state);
   }
 
+  { // instrucction alu done
+    auto instr = child.NewInstr("vta_child_alu_done");
+    auto is_instr_valid = ((child_valid_flag == VTA_VALID) & 
+                            (state == VTA_CHILD_STATE_ALU_DONE));
+    instr.SetDecode(is_instr_valid);
+
+    instr.SetUpdate(child_valid_flag, BvConst(VTA_INVALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(state, BvConst(VTA_CHILD_STATE_IDLE, state.bit_width()));
+  }
+
   { // instruction alu out loop
     auto instr = child.NewInstr("vta_child_alu_out_loop");
     auto is_instr_valid = ((child_valid_flag == VTA_VALID) & 

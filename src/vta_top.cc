@@ -24,6 +24,9 @@ Ila GetVtaIla(const std::string& model_name) {
 
   DefineVirMemInstr(m);
 
+  m.SetValid(((m.input(VTA_TOP_INSTR_IN) & BvConst(0, VTA_INSTR_BITWIDTH)) > 0) |
+              (m.input(VTA_VIR_MEM_MODE_IN) > 0));
+
   return m;
 }
 
