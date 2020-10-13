@@ -48,6 +48,10 @@ void DefineArchState(Ila& m) {
     m.NewMemState(VTA_VIRTUAL_UOP_DRAM, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_UOP_DRAM_DATA_BITWIDTH);
   vir_uop_dram.SetEntryNum(VTA_VIRTUAL_UOP_DRAM_ENTRY_NUM);
 
+  auto vir_out_dram = 
+    m.NewMemState(VTA_VIRTUAL_DRAM_OUT, VTA_MEMORY_ADDR_BITWIDTH, VTA_VIRTUAL_DRAM_OUT_DATA_BITWIDTH);
+  vir_out_dram.SetEntryNum(VTA_VIRTUAL_DRAM_OUT_ENTRY_NUM);
+
 }
 
 }

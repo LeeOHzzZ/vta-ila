@@ -203,6 +203,9 @@ void DefineChildALU(Ila& m) {
     auto dst_tensor_next = read_tensor(acc_mem, dst_tensor, dst_base_addr, VTA_BATCH_SIZE*VTA_BLOCK_OUT);
     instr.SetUpdate(src_tensor, src_tensor_next);
     instr.SetUpdate(dst_tensor, dst_tensor_next);
+    // update 10132020: add update to the indice
+    instr.SetUpdate(src_idx, src_idx_next);
+    instr.SetUpdate(dst_idx, dst_idx_next);
 
     // initiate inner loop cntr
     instr.SetUpdate(i_cntr, BvConst(0, i_cntr.bit_width()));
@@ -246,14 +249,16 @@ void DefineChildALU(Ila& m) {
                             (alu_opcode == VTA_ALU_OPCODE_MIN));
     instr.SetDecode(is_instr_valid);
 
-    auto src_0 = Load(dst_tensor, i_cntr*b_cntr);
+    // update 10132020: index bugs fixed
+    auto tensor_idx = i_cntr*VTA_BLOCK_OUT+b_cntr;
+    auto src_0 = Load(dst_tensor, tensor_idx);
     auto imm = m.state(VTA_ALU_IMM);
     auto src_1 = Ite(m.state(VTA_ALU_USE_IMM_FLAG) == VTA_VALID,
-                     Imm2Acc(imm), Load(src_tensor, i_cntr*b_cntr));
+                     Imm2Acc(imm), Load(src_tensor, tensor_idx));
     auto result = AccMin(src_0, src_1);
 
-    auto dst_tensor_next = Store(dst_tensor, i_cntr*b_cntr, result);
-    auto o_tensor_next = Store(o_tensor, i_cntr*b_cntr, Acc2Out(result));
+    auto dst_tensor_next = Store(dst_tensor, tensor_idx, result);
+    auto o_tensor_next = Store(o_tensor, tensor_idx, Acc2Out(result));
     instr.SetUpdate(dst_tensor, dst_tensor_next);
     instr.SetUpdate(o_tensor, o_tensor_next);
 
@@ -268,14 +273,15 @@ void DefineChildALU(Ila& m) {
                             (alu_opcode == VTA_ALU_OPCODE_MAX));
     instr.SetDecode(is_instr_valid);
 
-    auto src_0 = Load(dst_tensor, i_cntr*b_cntr);
+    auto tensor_idx = i_cntr*VTA_BLOCK_OUT+b_cntr;
+    auto src_0 = Load(dst_tensor, tensor_idx);
     auto imm = m.state(VTA_ALU_IMM);
     auto src_1 = Ite(m.state(VTA_ALU_USE_IMM_FLAG) == VTA_VALID,
-                     Imm2Acc(imm), Load(src_tensor, i_cntr*b_cntr));
+                     Imm2Acc(imm), Load(src_tensor, tensor_idx));
     auto result = AccMax(src_0, src_1);
 
-    auto dst_tensor_next = Store(dst_tensor, i_cntr*b_cntr, result);
-    auto o_tensor_next = Store(o_tensor, i_cntr*b_cntr, Acc2Out(result));
+    auto dst_tensor_next = Store(dst_tensor, tensor_idx, result);
+    auto o_tensor_next = Store(o_tensor, tensor_idx, Acc2Out(result));
     instr.SetUpdate(dst_tensor, dst_tensor_next);
     instr.SetUpdate(o_tensor, o_tensor_next);
 
@@ -290,14 +296,15 @@ void DefineChildALU(Ila& m) {
                             (alu_opcode == VTA_ALU_OPCODE_ADD));
     instr.SetDecode(is_instr_valid);
 
-    auto src_0 = Load(dst_tensor, i_cntr*b_cntr);
+    auto tensor_idx = i_cntr*VTA_BLOCK_OUT + b_cntr;
+    auto src_0 = Load(dst_tensor, tensor_idx);
     auto imm = m.state(VTA_ALU_IMM);
     auto src_1 = Ite(m.state(VTA_ALU_USE_IMM_FLAG) == VTA_VALID,
-                     Imm2Acc(imm), Load(src_tensor, i_cntr*b_cntr));
+                     Imm2Acc(imm), Load(src_tensor, tensor_idx));
     auto result = AccAdd(src_0, src_1);
 
-    auto dst_tensor_next = Store(dst_tensor, i_cntr*b_cntr, result);
-    auto o_tensor_next = Store(o_tensor, i_cntr*b_cntr, Acc2Out(result));
+    auto dst_tensor_next = Store(dst_tensor, tensor_idx, result);
+    auto o_tensor_next = Store(o_tensor, tensor_idx, Acc2Out(result));
     instr.SetUpdate(dst_tensor, dst_tensor_next);
     instr.SetUpdate(o_tensor, o_tensor_next);
 
@@ -312,14 +319,15 @@ void DefineChildALU(Ila& m) {
                             (alu_opcode == VTA_ALU_OPCODE_SHR));
     instr.SetDecode(is_instr_valid);
 
-    auto src_0 = Load(dst_tensor, i_cntr*b_cntr);
+    auto tensor_idx = i_cntr*VTA_BLOCK_OUT + b_cntr;
+    auto src_0 = Load(dst_tensor, tensor_idx);
     auto imm = m.state(VTA_ALU_IMM);
     auto src_1 = Ite(m.state(VTA_ALU_USE_IMM_FLAG) == VTA_VALID,
-                     Imm2Acc(imm), Load(src_tensor, i_cntr*b_cntr));
+                     Imm2Acc(imm), Load(src_tensor, tensor_idx));
     auto result = AccShr(src_0, src_1);
 
-    auto dst_tensor_next = Store(dst_tensor, i_cntr*b_cntr, result);
-    auto o_tensor_next = Store(o_tensor, i_cntr*b_cntr, Acc2Out(result));
+    auto dst_tensor_next = Store(dst_tensor, tensor_idx, result);
+    auto o_tensor_next = Store(o_tensor, tensor_idx, Acc2Out(result));
     instr.SetUpdate(dst_tensor, dst_tensor_next);
     instr.SetUpdate(o_tensor, o_tensor_next);
 

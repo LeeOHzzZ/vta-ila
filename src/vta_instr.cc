@@ -247,6 +247,59 @@ void DefineInstr(Ila& m) {
   
   }
 
+  // update 10132020: update store instruction
+  // store instruction is sharing the same ila states with load
+  { // instruction store_output
+    auto instr = m.NewInstr("vta_store_output");
+
+    auto vta_ins_in = m.input(VTA_TOP_INSTR_IN);
+    auto opcode = Extract(vta_ins_in, VTA_OPCODE_BITWIDTH-1, 0);
+    // use ins_temp for slicing instructions parameters
+    auto ins_temp = (vta_ins_in >> VTA_OPCODE_BITWIDTH);
+
+    auto is_opcode_store = (opcode == VTA_OPCODE_STORE);
+    instr.SetDecode(is_opcode_store);
+
+    // skip unused parameters
+    ins_temp = ins_temp >> 4;
+    ins_temp = (ins_temp >> VTA_MEMOP_ID_BITWIDTH);
+
+    // decode instruction parameters from the instruction
+    auto sram_base = Extract(ins_temp, VTA_MEMOP_SRAM_ADDR_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_MEMOP_SRAM_ADDR_BITWIDTH;
+    
+    auto dram_base = Extract(ins_temp, VTA_MEMOP_DRAM_ADDR_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_MEMOP_DRAM_ADDR_BITWIDTH;
+
+    auto unused_bits = (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH  - 4 - VTA_MEMOP_ID_BITWIDTH - 
+                        VTA_MEMOP_SRAM_ADDR_BITWIDTH - VTA_MEMOP_DRAM_ADDR_BITWIDTH);
+    ILA_ASSERT(unused_bits >= 0);
+    ins_temp = ins_temp >> unused_bits;
+    
+    auto y_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+    
+    auto x_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
+
+    auto x_stride = Extract(ins_temp, VTA_MEMOP_STRIDE_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
+    
+    instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
+    instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
+    instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
+    instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
+    instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
+
+    instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
+
+    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
+                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+                    BvConst(VTA_CHILD_STATE_STORE_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH));
+  
+  }
+
   { // vta instruction for GEMM
     auto instr = m.NewInstr("vta_gemm");
 

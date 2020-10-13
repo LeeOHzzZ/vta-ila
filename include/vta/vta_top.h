@@ -34,8 +34,8 @@ void DefineVirMemInstr(Ila& m);
 
 // define child
 void DefineChild(Ila& m);
-// define child instructions for load instruction
-void DefineChildInstrLoad(Ila& m);
+// define child instructions for load/Store instruction
+void DefineChildInstrLoadStore(Ila& m);
 // define child instruction for GEMM
 void DefineChildGEMM(Ila& m);
 // define child instruction for alu

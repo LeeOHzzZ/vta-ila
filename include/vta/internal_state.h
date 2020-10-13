@@ -57,6 +57,10 @@ namespace vta {
 #define VTA_CHILD_STATE_ALU_COMPUTE 29
 #define VTA_CHILD_STATE_ALU_DONE 33
 
+#define VTA_CHILD_STATE_STORE_Y_SIZE 34
+#define VTA_CHILD_STATE_STORE_X_SIZE 35
+
+
 // --------------- internal states for vta load/store -------------------- //
 #define VTA_LOAD_Y_CNTR "vta_load_y_cntr"
 #define VTA_LOAD_Y_CNTR_BITWIDTH (VTA_MEMOP_SIZE_BITWIDTH)
