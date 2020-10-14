@@ -587,16 +587,17 @@ void DefineInstr(Ila& m) {
     auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
 
+    auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
+    ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+
     auto unused_bits = 
       (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
        VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
-
-    auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
-    ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
-    auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
-    ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
