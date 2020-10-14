@@ -141,8 +141,13 @@ void DefineInstr(Ila& m) {
 
     instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
                     BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
-    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
-                    BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_0, VTA_CHILD_INSTR_STATE_BITWIDTH));
+    // update 10132020: fix bug for padding if offset are 0
+    auto next_state = 
+      Ite(y_offset_0 == 0,
+          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
+          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_0, VTA_CHILD_INSTR_STATE_BITWIDTH));
+
+    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE), next_state);
   }
 
   { // instruction load uops
@@ -606,7 +611,7 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
     auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
 
-    auto is_shr = (alu_opcode == VTA_ALU_OPCODE_MAX);
+    auto is_shr = (alu_opcode == VTA_ALU_OPCODE_SHR);
     instr.SetDecode(is_opcode_alu & is_shr);
 
     instr.SetUpdate(m.state(VTA_ALU_RESET_FLAG), reset_flag);

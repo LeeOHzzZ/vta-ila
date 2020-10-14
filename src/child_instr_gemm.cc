@@ -234,6 +234,10 @@ void DefineChildGEMM(Ila& m) {
     auto wgt_base_addr = 
       Concat(BvConst(0, 32-wgt_idx_next.bit_width()), wgt_idx_next) * VTA_WGT_MAT_DATA_NUM;
 
+    instr.SetUpdate(dst_idx, dst_idx_next);
+    instr.SetUpdate(src_idx, src_idx_next);
+    instr.SetUpdate(wgt_idx, wgt_idx_next);
+
     // read tensors
     auto wgt_mem = m.state(VTA_WEIGHT_MEMORY);
     auto w_tensor_next = read_tensor(wgt_mem, w_tensor, wgt_base_addr, VTA_BLOCK_OUT*VTA_BLOCK_IN);
@@ -288,15 +292,16 @@ void DefineChildGEMM(Ila& m) {
     instr.SetUpdate(sum_temp, BvConst(0, sum_temp.bit_width()));
 
     // update sum
-    auto accum = Load(a_tensor, b_cntr * oc_cntr);
+    auto a_tensor_idx = b_cntr * VTA_BLOCK_OUT + oc_cntr;
+
+    auto accum = Load(a_tensor, a_tensor_idx);
     auto accum_next = AccumAddSum(accum, sum_temp);
 
-    auto a_tensor_idx = b_cntr * oc_cntr;
     auto acc_elem_next = Ite(m.state(VTA_GEMM_RESET_FLAG) == VTA_VALID,
                              BvConst(0, VTA_ACCUM_BITWIDTH), accum_next);
     instr.SetUpdate(a_tensor, Store(a_tensor, a_tensor_idx, acc_elem_next));
 
-    auto o_tensor_idx = b_cntr * oc_cntr;
+    auto o_tensor_idx = b_cntr * VTA_BLOCK_OUT + oc_cntr;
     instr.SetUpdate(o_tensor, Store(o_tensor, o_tensor_idx, Accum2Out(accum_next)));
 
     auto next_state = 
@@ -312,8 +317,8 @@ void DefineChildGEMM(Ila& m) {
                             (state == VTA_CHILD_STATE_GEMM_INNER_LOOP_MATMUL));
     instr.SetDecode(is_instr_valid);
 
-    auto w_tensor_idx = oc_cntr * ic_cntr;
-    auto i_tensor_idx = b_cntr * ic_cntr;
+    auto w_tensor_idx = oc_cntr * VTA_BLOCK_IN + ic_cntr;
+    auto i_tensor_idx = b_cntr * VTA_BLOCK_IN + ic_cntr;
     auto wgt = Load(w_tensor, w_tensor_idx);
     auto inp = Load(i_tensor, i_tensor_idx);
     std::vector<ExprRef> mac_in = {sum_temp, wgt, inp};

@@ -28,6 +28,8 @@ void DefineChildInstrLoadStore(Ila& m) {
   auto x_pad_1 = m.state(VTA_X_PAD_1);
   auto y_pad_0 = m.state(VTA_Y_PAD_0);
   auto y_pad_1 = m.state(VTA_Y_PAD_1);
+  auto y_offset_0 = m.state(VTA_LOAD_Y_OFFSET_0);
+  auto y_offset_1 = m.state(VTA_LOAD_Y_OFFSET_1);
 
   // ------------ extended states ---------- //
   auto sram_base_32 = Concat(BvConst(0, 32-sram_base.bit_width()), sram_base);
@@ -63,7 +65,6 @@ void DefineChildInstrLoadStore(Ila& m) {
 
   }
 
-  ILA_INFO << "test";
   { // child instruction ---- LOAD WGT 1
     auto instr = child.NewInstr("vta_child_load_wgt_x_size");
     auto is_instr_valid = ((valid_flag == VTA_VALID) & (state == VTA_CHILD_STATE_LOAD_WGT_X_SIZE));
@@ -123,7 +124,7 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetDecode(is_instr_valid);
 
     auto pad_cntr = m.state(VTA_LOAD_INP_PAD_CNTR);
-    auto y_offset_0 = m.state(VTA_LOAD_Y_OFFSET_0);
+    // auto y_offset_0 = m.state(VTA_LOAD_Y_OFFSET_0);
 
     auto pad_cntr_32 = Concat(BvConst(0, 32-pad_cntr.bit_width()), pad_cntr);
     // auto sram_base_32 = Concat(BvConst(0, 32-sram_base.bit_width()), sram_base);
@@ -149,6 +150,7 @@ void DefineChildInstrLoadStore(Ila& m) {
       Ite(pad_cntr >= y_offset_0 - 1,
           BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
           BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_0, VTA_CHILD_INSTR_STATE_BITWIDTH));
+    instr.SetUpdate(state, next_state);
   }
 
   { // child instruction ---- load_inp_1
@@ -158,7 +160,7 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetDecode(is_instr_valid);
 
     auto y_cntr = m.state(VTA_LOAD_Y_CNTR);
-    auto y_offset_0 = m.state(VTA_LOAD_Y_OFFSET_0);
+    // auto y_offset_0 = m.state(VTA_LOAD_Y_OFFSET_0);
 
     // set the sram_addr base
     auto y_offset_0_32 = Concat(BvConst(0, 32-y_offset_0.bit_width()), y_offset_0);
@@ -176,7 +178,10 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetUpdate(m.state(VTA_LOAD_INP_PAD_CNTR),
                     BvConst(0, VTA_LOAD_INP_PAD_CNTR_BITWIDTH));
 
-    auto next_state = BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_0, VTA_CHILD_INSTR_STATE_BITWIDTH);
+    auto next_state = 
+      Ite(x_pad_0 == 0,
+          BvConst(VTA_CHILD_STATE_LOAD_INP_X_SIZE, state.bit_width()),
+          BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_0, state.bit_width()));
     instr.SetUpdate(state, next_state);
   }
 
@@ -202,11 +207,11 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetUpdate(sram_addr, sram_addr + VTA_INP_MAT_DATA_NUM);
 
     auto x_pad_0_ext = Concat(BvConst(0, pad_cntr.bit_width()-x_pad_0.bit_width()), x_pad_0);
-    auto next_pad_cntr = Ite(pad_cntr >= x_pad_0_ext - 1,
+    auto next_pad_cntr = Ite(pad_cntr + 1 >= x_pad_0_ext,
                               BvConst(0, VTA_LOAD_INP_PAD_CNTR_BITWIDTH), pad_cntr + 1);
     instr.SetUpdate(pad_cntr, next_pad_cntr);
     
-    auto next_state = Ite(pad_cntr >= x_pad_0_ext - 1,
+    auto next_state = Ite(pad_cntr + 1 >= x_pad_0_ext,
                           BvConst(VTA_CHILD_STATE_LOAD_INP_X_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
                           BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_0, VTA_CHILD_INSTR_STATE_BITWIDTH));
     instr.SetUpdate(state, next_state);
@@ -241,9 +246,20 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetUpdate(sram_addr, sram_addr + VTA_INP_MAT_DATA_NUM);
     instr.SetUpdate(dram_addr, dram_addr + VTA_INP_MAT_DATA_NUM);
 
+    auto y_cntr = m.state(VTA_LOAD_Y_CNTR);
+ 
+    auto next_state_tmp = 
+      Ite(x_pad_1 > 0,
+          BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_1, state.bit_width()),
+      Ite(y_cntr < y_size,
+          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, state.bit_width()),
+      Ite(y_offset_1 > 0,
+          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_1, state.bit_width()),
+          BvConst(VTA_CHILD_STATE_LOAD_INP_DONE, state.bit_width()))));
+
     auto next_state = 
       Ite(x_cntr >= x_size - 1,
-          BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_1, VTA_CHILD_INSTR_STATE_BITWIDTH),
+          next_state_tmp,
           BvConst(VTA_CHILD_STATE_LOAD_INP_X_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH));
 
     instr.SetUpdate(state, next_state);
@@ -271,30 +287,36 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetUpdate(sram_addr, sram_addr + VTA_INP_MAT_DATA_NUM);
 
     auto x_pad_1_ext = Concat(BvConst(0, pad_cntr.bit_width()-x_pad_1.bit_width()), x_pad_1);
-    auto next_pad_cntr = Ite(pad_cntr >= x_pad_1_ext - 1,
+    auto next_pad_cntr = Ite(pad_cntr + 1 >= x_pad_1_ext,
                               BvConst(0, VTA_LOAD_INP_PAD_CNTR_BITWIDTH), pad_cntr + 1);
     instr.SetUpdate(pad_cntr, next_pad_cntr);
     
     auto y_cntr = m.state(VTA_LOAD_Y_CNTR);
-    auto is_pad_done = (pad_cntr >= x_pad_1_ext - 1);
+    auto is_pad_done = (pad_cntr + 1 >= x_pad_1_ext);
     auto is_y_done = (y_cntr >= y_size);
 
-    auto next_state = Ite(is_pad_done & is_y_done,
-                          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_1, VTA_CHILD_INSTR_STATE_BITWIDTH),
-                      Ite(is_pad_done,
-                          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
-                          BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_1, VTA_CHILD_INSTR_STATE_BITWIDTH)));
+    auto next_state_tmp = 
+      Ite(y_offset_1 == 0, BvConst(VTA_CHILD_STATE_LOAD_INP_DONE, state.bit_width()),
+                           BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_1, state.bit_width()));
+
+    auto next_state = 
+      Ite(is_pad_done & is_y_done,
+          next_state_tmp,
+      Ite(is_pad_done,
+          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
+          BvConst(VTA_CHILD_STATE_LOAD_INP_X_PAD_1, VTA_CHILD_INSTR_STATE_BITWIDTH)));
+
     instr.SetUpdate(state, next_state);
   }
 
   { // child instruction ---- load_inp_5
     // this instruction add the padding for y_pad_1
-    auto instr = child.NewInstr("vta_child_load_y_offset_1");
+    auto instr = child.NewInstr("vta_child_load_inp_y_offset_1");
     auto is_instr_valid = ((valid_flag == VTA_VALID) & (state == VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_1));
     instr.SetDecode(is_instr_valid);
 
     auto pad_cntr = m.state(VTA_LOAD_INP_PAD_CNTR);
-    auto y_offset_1 = m.state(VTA_LOAD_Y_OFFSET_1);
+    // auto y_offset_1 = m.state(VTA_LOAD_Y_OFFSET_1);
 
     auto sram_addr = child.state(VTA_LOAD_SRAM_ADDR);
     auto sram = m.state(VTA_INPUT_MEMORY);
@@ -308,18 +330,24 @@ void DefineChildInstrLoadStore(Ila& m) {
     instr.SetUpdate(sram, sram_next);
     instr.SetUpdate(sram_addr, sram_addr + VTA_INP_MAT_DATA_NUM);
 
-    auto is_pad_done = (pad_cntr >= y_offset_1 - 1);
+    auto is_pad_done = (pad_cntr + 1 >= y_offset_1);
     auto next_pad_cntr = 
       Ite(is_pad_done, BvConst(0, VTA_LOAD_INP_PAD_CNTR_BITWIDTH), pad_cntr+1);
     instr.SetUpdate(pad_cntr, next_pad_cntr);
     auto next_state = Ite(is_pad_done,
-                          BvConst(VTA_CHILD_STATE_IDLE, VTA_CHILD_INSTR_STATE_BITWIDTH),
-                          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_1, VTA_CHILD_INSTR_STATE_BITWIDTH));
+                          BvConst(VTA_CHILD_STATE_LOAD_INP_DONE, state.bit_width()),
+                          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_1, state.bit_width()));
     instr.SetUpdate(state, next_state);
-    instr.SetUpdate(valid_flag,
-                    Ite(is_pad_done,
-                        BvConst(VTA_INVALID, VTA_CHILD_VALID_FLAG_BITWIDTH),
-                        BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH)));
+  }
+
+  { // child instruction ---- load_inp_done
+    auto instr = child.NewInstr("vta_child_load_inp_done");
+    auto is_instr_valid = ((valid_flag == VTA_VALID) & (state == VTA_CHILD_STATE_LOAD_INP_DONE));
+    instr.SetDecode(is_instr_valid);
+
+    auto next_state = BvConst(VTA_CHILD_STATE_IDLE, state.bit_width());
+    instr.SetUpdate(state, next_state);
+    instr.SetUpdate(valid_flag, BvConst(VTA_INVALID, valid_flag.bit_width()));
   }
 
   // ------------------------------------------------------------------------
@@ -342,7 +370,7 @@ void DefineChildInstrLoadStore(Ila& m) {
     auto uop_mem_next = Store(uop_mem, sram_addr, Load(uop_dram, dram_addr));
     instr.SetUpdate(uop_mem, uop_mem_next);
 
-    auto is_done = (x_cntr >= x_size - 1);
+    auto is_done = (x_cntr + 1 >= x_size);
     auto next_state = Ite(is_done, 
                           BvConst(VTA_CHILD_STATE_IDLE, VTA_CHILD_INSTR_STATE_BITWIDTH),
                           BvConst(VTA_CHILD_STATE_LOAD_UOP, VTA_CHILD_INSTR_STATE_BITWIDTH));
@@ -405,7 +433,7 @@ void DefineChildInstrLoadStore(Ila& m) {
 
     auto y_cntr = m.state(VTA_LOAD_Y_CNTR);
     // end condition for x_cntr and y_cntr are different!
-    auto is_x_end = (x_cntr >= x_size - 1);
+    auto is_x_end = (x_cntr + 1 >= x_size);
     auto is_y_end = (y_cntr >= y_size);
 
     auto next_state = 
@@ -476,7 +504,7 @@ void DefineChildInstrLoadStore(Ila& m) {
 
     auto y_cntr = m.state(VTA_LOAD_Y_CNTR);
     // end condition for x_cntr and y_cntr are different!
-    auto is_x_end = (x_cntr >= x_size - 1);
+    auto is_x_end = (x_cntr + 1 >= x_size);
     auto is_y_end = (y_cntr >= y_size);
 
     auto next_state = 
