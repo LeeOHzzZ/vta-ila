@@ -9,24 +9,34 @@ namespace vta {
 
 Ila GetVtaIla(const std::string& model_name) {
   auto m = Ila(model_name);
+  
+  SetUnsignedComparison(true);
 
-  // define interface and architectural states
-  auto addr = m.NewBvInput("addr", 16);
-  auto data = m.NewBvInput("data", 8);
-  auto ctrl = m.NewBvState("ctrl", 8);
-  auto mode = m.NewBvState("mode", 8);
+  DefineTopIO(m);
+  DefineArchState(m);
+  DefineInternalState(m);
 
-  // define ILA valid function
-  m.SetValid(addr >= 0xFF00 & addr < 0xFF10);
+  DefineInstr(m);
+  DefineChild(m);
+  DefineChildInstrLoadStore(m);
+  DefineChildGEMM(m);
+  DefineChildALU(m);
 
-  // define instruction - decode and state update functions
-  auto instr_wr_ctrl = m.NewInstr("WrCtrl");
-  instr_wr_ctrl.SetDecode(addr == 0xFF00);
-  instr_wr_ctrl.SetUpdate(ctrl, Ite(data < 8, data, ctrl));
+  DefineVirMemInstr(m);
 
-  // TODO
+  m.SetValid(((m.input(VTA_TOP_INSTR_IN) & BvConst(0, VTA_INSTR_BITWIDTH)) > 0) |
+              (m.input(VTA_VIR_MEM_MODE_IN) > 0));
 
   return m;
+}
+
+void DefineChild(Ila& m) {
+  auto child = m.NewChild("vta_child");
+  auto state = m.state(VTA_CHILD_INSTR_STATE);
+  auto valid_flag = m.state(VTA_CHILD_VALID_FLAG);
+
+  auto is_child_valid = ((valid_flag == VTA_VALID) & (state != VTA_CHILD_STATE_IDLE));
+  child.SetValid(is_child_valid);
 }
 
 } // namespace vta
