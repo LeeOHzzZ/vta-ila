@@ -3,9 +3,43 @@
 #include <ilang/ilang++.h>
 #include <vta/vta_top.h>
 #include <ilang/util/log.h>
+#include <vector>
 
 namespace ilang {
 namespace vta {
+
+auto wgt_mem_T = SortRef::MEM(VTA_MEMORY_ADDR_BITWIDTH, VTA_WEIGHT_MEMORY_DATA_BITWIDTH);
+auto inp_mem_T = SortRef::MEM(VTA_MEMORY_ADDR_BITWIDTH, VTA_INPUT_MEMORY_DATA_BITWIDTH);
+auto uop_mem_T = SortRef::MEM(VTA_MEMORY_ADDR_BITWIDTH, VTA_UOP_MEMORY_DATA_BITWIDTH);
+auto bias_mem_T = SortRef::MEM(VTA_MEMORY_ADDR_BITWIDTH, VTA_OUT_MEMORY_DATA_BITWIDTH);
+
+auto sram_base_T = SortRef::BV(VTA_MEMOP_SRAM_ADDR_BITWIDTH);
+auto dram_base_T = SortRef::BV(VTA_MEMOP_DRAM_ADDR_BITWIDTH);
+auto memop_size_T = SortRef::BV(VTA_MEMOP_SIZE_BITWIDTH);
+auto memop_pad_T = SortRef::BV(VTA_MEMOP_PAD_BITWIDTH);
+
+std::vector<SortRef> load_wgt_in = 
+  {wgt_mem_T, sram_base_T, dram_base_T, memop_size_T, memop_size_T, memop_size_T};
+FuncRef uf_load_wgt("uf_load_wgt", wgt_mem_T, load_wgt_in);
+
+std::vector<SortRef> load_inp_in = 
+  {
+    inp_mem_T, sram_base_T, dram_base_T,
+    memop_size_T, memop_size_T, memop_size_T,
+    memop_pad_T, memop_pad_T, memop_pad_T, memop_pad_T
+  };
+FuncRef uf_load_inp("uf_load_inp", inp_mem_T, load_inp_in);
+
+std::vector<SortRef> load_uop_in = 
+  {uop_mem_T, sram_base_T, dram_base_T, memop_size_T};
+FuncRef uf_load_uop("uf_load_uop", uop_mem_T, load_uop_in);
+
+std::vector<SortRef> load_bias_in = 
+  {
+    bias_mem_T, sram_base_T, dram_base_T, 
+    memop_size_T, memop_size_T, memop_size_T
+  };
+FuncRef uf_load_bias("uf_load_bias", bias_mem_T, load_bias_in);
 
 void DefineInstr(Ila& m) {
     
@@ -48,18 +82,26 @@ void DefineInstr(Ila& m) {
     auto x_stride = Extract(ins_temp, VTA_MEMOP_STRIDE_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
     
-    instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
-    instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
-    instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
-    instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
-    instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
+    // instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
+    // instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
+    // instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
+    // instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
+    // instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
 
-    instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
 
-    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
-                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
-    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
-                    BvConst(VTA_CHILD_STATE_LOAD_WGT_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH));
+    // use uninterpreted function to handle the load for the weight memory
+    auto weight_mem = m.state(VTA_WEIGHT_MEMORY);
+    std::vector<ExprRef> wgt_ld_in = 
+      {weight_mem, sram_base, dram_base, y_size, x_size, x_stride};
+    auto weight_mem_next = uf_load_wgt(wgt_ld_in);
+
+    instr.SetUpdate(weight_mem, weight_mem_next);   
+
+    // instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
+    //                 BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+    //                 BvConst(VTA_CHILD_STATE_LOAD_WGT_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH));
   }
 
   { // instruction load inputs
@@ -107,47 +149,60 @@ void DefineInstr(Ila& m) {
     auto x_pad_0 = Extract(ins_temp, 3*VTA_MEMOP_PAD_BITWIDTH-1, 2*VTA_MEMOP_PAD_BITWIDTH);
     auto x_pad_1 = Extract(ins_temp, 4*VTA_MEMOP_PAD_BITWIDTH-1, 3*VTA_MEMOP_PAD_BITWIDTH);
 
-    instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
-    instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
-    instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
-    instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
-    instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
-    instr.SetUpdate(m.state(VTA_Y_PAD_0), y_pad_0);
-    instr.SetUpdate(m.state(VTA_Y_PAD_1), y_pad_1);
-    instr.SetUpdate(m.state(VTA_X_PAD_0), x_pad_0);
-    instr.SetUpdate(m.state(VTA_X_PAD_1), x_pad_1);
+    // use uninterpreted function to handle load input data
+    auto inp_mem = m.state(VTA_INPUT_MEMORY);
+    std::vector<ExprRef> ld_inp_in = 
+      {
+        inp_mem, sram_base, dram_base,
+        y_size, x_size, x_stride,
+        y_pad_0, y_pad_1, x_pad_0, x_pad_1
+      };
+    
+    auto inp_mem_next = uf_load_inp(ld_inp_in);
+    instr.SetUpdate(inp_mem, inp_mem_next);
 
-    auto pad_cntr = m.state(VTA_LOAD_INP_PAD_CNTR);
-    // auto x_size_ext = 
-    //   Concat(BvConst(0, pad_cntr.bit_width() - x_size.bit_width()), x_size);
-    auto x_size_ext = x_size;
-    auto x_pad_0_ext = 
-      Concat(BvConst(0, pad_cntr.bit_width() - x_pad_0.bit_width()), x_pad_0);
-    auto x_pad_1_ext = 
-      Concat(BvConst(0, pad_cntr.bit_width() - x_pad_1.bit_width()), x_pad_1);
-    auto y_pad_0_ext = 
-      Concat(BvConst(0, pad_cntr.bit_width() - y_pad_0.bit_width()), y_pad_0);
-    auto y_pad_1_ext = 
-      Concat(BvConst(0, pad_cntr.bit_width() - y_pad_1.bit_width()), y_pad_1);
 
-    auto y_offset_0 = (x_pad_0_ext + x_size_ext + x_pad_1_ext) * y_pad_0_ext;
-    auto y_offset_1 = (x_pad_0_ext + x_size_ext + x_pad_1_ext) * y_pad_1_ext;
+    // instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
+    // instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
+    // instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
+    // instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
+    // instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
+    // instr.SetUpdate(m.state(VTA_Y_PAD_0), y_pad_0);
+    // instr.SetUpdate(m.state(VTA_Y_PAD_1), y_pad_1);
+    // instr.SetUpdate(m.state(VTA_X_PAD_0), x_pad_0);
+    // instr.SetUpdate(m.state(VTA_X_PAD_1), x_pad_1);
 
-    // initiate the cntr
-    instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
-    instr.SetUpdate(pad_cntr, BvConst(0, VTA_LOAD_INP_PAD_CNTR_BITWIDTH));
-    instr.SetUpdate(m.state(VTA_LOAD_Y_OFFSET_0), y_offset_0);
-    instr.SetUpdate(m.state(VTA_LOAD_Y_OFFSET_1), y_offset_1);
+    // auto pad_cntr = m.state(VTA_LOAD_INP_PAD_CNTR);
+    // // auto x_size_ext = 
+    // //   Concat(BvConst(0, pad_cntr.bit_width() - x_size.bit_width()), x_size);
+    // auto x_size_ext = x_size;
+    // auto x_pad_0_ext = 
+    //   Concat(BvConst(0, pad_cntr.bit_width() - x_pad_0.bit_width()), x_pad_0);
+    // auto x_pad_1_ext = 
+    //   Concat(BvConst(0, pad_cntr.bit_width() - x_pad_1.bit_width()), x_pad_1);
+    // auto y_pad_0_ext = 
+    //   Concat(BvConst(0, pad_cntr.bit_width() - y_pad_0.bit_width()), y_pad_0);
+    // auto y_pad_1_ext = 
+    //   Concat(BvConst(0, pad_cntr.bit_width() - y_pad_1.bit_width()), y_pad_1);
 
-    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
-                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
-    // update 10132020: fix bug for padding if offset are 0
-    auto next_state = 
-      Ite(y_offset_0 == 0,
-          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
-          BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_0, VTA_CHILD_INSTR_STATE_BITWIDTH));
+    // auto y_offset_0 = (x_pad_0_ext + x_size_ext + x_pad_1_ext) * y_pad_0_ext;
+    // auto y_offset_1 = (x_pad_0_ext + x_size_ext + x_pad_1_ext) * y_pad_1_ext;
 
-    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE), next_state);
+    // // initiate the cntr
+    // instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
+    // instr.SetUpdate(pad_cntr, BvConst(0, VTA_LOAD_INP_PAD_CNTR_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_LOAD_Y_OFFSET_0), y_offset_0);
+    // instr.SetUpdate(m.state(VTA_LOAD_Y_OFFSET_1), y_offset_1);
+
+    // instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
+    //                 BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    // // update 10132020: fix bug for padding if offset are 0
+    // auto next_state = 
+    //   Ite(y_offset_0 == 0,
+    //       BvConst(VTA_CHILD_STATE_LOAD_INP_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH),
+    //       BvConst(VTA_CHILD_STATE_LOAD_INP_Y_OFFSET_0, VTA_CHILD_INSTR_STATE_BITWIDTH));
+
+    // instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE), next_state);
   }
 
   { // instruction load uops
@@ -187,15 +242,22 @@ void DefineInstr(Ila& m) {
     ins_temp = ins_temp >> VTA_MEMOP_SIZE_BITWIDTH;
     auto x_size = Extract(ins_temp, VTA_MEMOP_SIZE_BITWIDTH-1, 0);
 
-    instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
-    instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
-    instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
+    // use uninterpreted function to handle the uop load 
+    auto uop_mem = m.state(VTA_UOP_MEMORY);
+    std::vector<ExprRef> ld_uop_in = 
+      {uop_mem, sram_base, dram_base, x_size};
+    auto uop_mem_next = uf_load_uop(ld_uop_in);
+    instr.SetUpdate(uop_mem, uop_mem_next);
 
-    instr.SetUpdate(m.state(VTA_LOAD_X_CNTR), BvConst(0, VTA_LOAD_X_CNTR_BITWIDTH));
-    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
-                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
-    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
-                    BvConst(VTA_CHILD_STATE_LOAD_UOP, VTA_CHILD_INSTR_STATE_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
+    // instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
+    // instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
+
+    // instr.SetUpdate(m.state(VTA_LOAD_X_CNTR), BvConst(0, VTA_LOAD_X_CNTR_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
+    //                 BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+    //                 BvConst(VTA_CHILD_STATE_LOAD_UOP, VTA_CHILD_INSTR_STATE_BITWIDTH));
   }
 
   { // instruction load_bias
@@ -236,19 +298,29 @@ void DefineInstr(Ila& m) {
 
     auto x_stride = Extract(ins_temp, VTA_MEMOP_STRIDE_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_MEMOP_STRIDE_BITWIDTH;
-    
-    instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
-    instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
-    instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
-    instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
-    instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
 
-    instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
+    // use uninterpreted function to handle bias load
+    auto bias_mem = m.state(VTA_OUT_MEMORY);
+    std::vector<ExprRef> ld_bias_in = 
+      {
+        bias_mem, sram_base, dram_base,
+        y_size, x_size, x_stride
+      };
+    auto bias_mem_next = uf_load_bias(ld_bias_in);
+    instr.SetUpdate(bias_mem, bias_mem_next);
+        
+    // instr.SetUpdate(m.state(VTA_SRAM_ID), sram_base);
+    // instr.SetUpdate(m.state(VTA_DRAM_ID), dram_base);
+    // instr.SetUpdate(m.state(VTA_Y_SIZE), y_size);
+    // instr.SetUpdate(m.state(VTA_X_SIZE), x_size);
+    // instr.SetUpdate(m.state(VTA_X_STRIDE), x_stride);
 
-    instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
-                    BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
-    instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
-                    BvConst(VTA_CHILD_STATE_LOAD_BIAS_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_LOAD_Y_CNTR), BvConst(0, VTA_LOAD_Y_CNTR_BITWIDTH));
+
+    // instr.SetUpdate(m.state(VTA_CHILD_VALID_FLAG),
+    //                 BvConst(VTA_VALID, VTA_CHILD_VALID_FLAG_BITWIDTH));
+    // instr.SetUpdate(m.state(VTA_CHILD_INSTR_STATE),
+    //                 BvConst(VTA_CHILD_STATE_LOAD_BIAS_Y_SIZE, VTA_CHILD_INSTR_STATE_BITWIDTH));
   
   }
 
@@ -529,7 +601,7 @@ void DefineInstr(Ila& m) {
        VTA_ALU_UOP_END_BITWIDTH - VTA_ALU_ITER_OUT_BITWIDTH - VTA_ALU_ITER_IN_BITWIDTH);
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
-    ILA_INFO << "unused_bits for add: " << unused_bits;
+    // ILA_INFO << "unused_bits for add: " << unused_bits;
 
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
