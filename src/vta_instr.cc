@@ -322,12 +322,17 @@ void DefineInstr(Ila& m) {
 
     auto reset_flag = SelectBit(ins_temp, 0);
     ins_temp = ins_temp >> VTA_GEMM_RESET_FLAG_BITWIDTH;
+
+    ILA_INFO << "VTA_GEMM_UOP_BEGIN_BITWIDTH = " << VTA_GEMM_UOP_BEGIN_BITWIDTH;
     auto uop_bgn = Extract(ins_temp, VTA_GEMM_UOP_BEGIN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_UOP_BEGIN_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_UOP_END_BITWIDTH = " << VTA_GEMM_UOP_END_BITWIDTH;
     auto uop_end = Extract(ins_temp, VTA_GEMM_UOP_END_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_UOP_END_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_ITER_OUT_BITWIDTH = " << VTA_GEMM_ITER_OUT_BITWIDTH;
     auto iter_out = Extract(ins_temp, VTA_GEMM_ITER_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_ITER_OUT_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_ITER_IN_BITWIDHT" << VTA_GEMM_ITER_IN_BITWIDTH;
     auto iter_in = Extract(ins_temp, VTA_GEMM_ITER_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_ITER_IN_BITWIDTH;
 
@@ -337,16 +342,22 @@ void DefineInstr(Ila& m) {
     ILA_ASSERT(unused_bits >= 0);
     ins_temp = ins_temp >> unused_bits;
 
+    ILA_INFO << "VTA_GEMM_DST_FACTOR_OUT_BITWIDTH = " << VTA_GEMM_DST_FACTOR_OUT_BITWIDTH;
     auto dst_factor_out = Extract(ins_temp, VTA_GEMM_DST_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_DST_FACTOR_OUT_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_DST_FACTOR_IN_BITWIDTH = " << VTA_GEMM_DST_FACTOR_IN_BITWIDTH;
     auto dst_factor_in = Extract(ins_temp, VTA_GEMM_DST_FACTOR_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_DST_FACTOR_IN_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH = " << VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH;
     auto src_factor_out = Extract(ins_temp, VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_SRC_FACTOR_OUT_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_SRC_FACTOR_IN_BITWIDTH = " << VTA_GEMM_SRC_FACTOR_IN_BITWIDTH;
     auto src_factor_in = Extract(ins_temp, VTA_GEMM_SRC_FACTOR_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_SRC_FACTOR_IN_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH = " << VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH;
     auto wgt_factor_out = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_WGT_FACTOR_OUT_BITWIDTH;
+    ILA_INFO << "VTA_GEMM_WGT_FACTOR_IN_BITWIDTH = " << VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
     auto wgt_factor_in = Extract(ins_temp, VTA_GEMM_WGT_FACTOR_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_GEMM_WGT_FACTOR_IN_BITWIDTH;
 
@@ -357,7 +368,7 @@ void DefineInstr(Ila& m) {
     instr.SetUpdate(m.state(VTA_GEMM_ITER_IN), iter_in);
     instr.SetUpdate(m.state(VTA_GEMM_DST_FACTOR_OUT), dst_factor_out);
     instr.SetUpdate(m.state(VTA_GEMM_DST_FACTOR_IN), dst_factor_in);
-    instr.SetUpdate(m.state(VTA_GEMM_SRC_FACTOR_OUT), src_factor_in);
+    instr.SetUpdate(m.state(VTA_GEMM_SRC_FACTOR_OUT), src_factor_out);
     instr.SetUpdate(m.state(VTA_GEMM_SRC_FACTOR_IN), src_factor_in);
     instr.SetUpdate(m.state(VTA_GEMM_WGT_FACTOR_OUT), wgt_factor_out);
     instr.SetUpdate(m.state(VTA_GEMM_WGT_FACTOR_IN), wgt_factor_in);
