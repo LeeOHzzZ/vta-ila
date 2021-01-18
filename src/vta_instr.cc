@@ -394,14 +394,19 @@ void DefineInstr(Ila& m) {
     
     auto reset_flag = SelectBit(ins_temp, 0);
     ins_temp = ins_temp >> VTA_ALU_RESET_FLAG_BITWIDTH;
+    std::cout << "VTA_ALU_RESET_FLAG_BITWIDTH = " << VTA_ALU_RESET_FLAG_BITWIDTH << std::endl;
     auto uop_bgn = Extract(ins_temp, VTA_ALU_UOP_BEGIN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_UOP_BEGIN_BITWIDTH;
+    std::cout << "VTA_ALU_UOP_BEGIN_BITWIDTH = " << VTA_ALU_UOP_BEGIN_BITWIDTH << std::endl;
     auto uop_end = Extract(ins_temp, VTA_ALU_UOP_END_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_UOP_END_BITWIDTH;
+    std::cout << "VTA_ALU_UOP_END_BITWIDTH = " << VTA_ALU_UOP_END_BITWIDTH << std::endl;
     auto iter_out = Extract(ins_temp, VTA_ALU_ITER_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_ITER_OUT_BITWIDTH;
+    std::cout << "VTA_ALU_ITER_OUT_BITWIDTH = " << VTA_ALU_ITER_OUT_BITWIDTH << std::endl;
     auto iter_in = Extract(ins_temp, VTA_ALU_ITER_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_ITER_IN_BITWIDTH;
+    std::cout << "VTA_ALU_ITER_IN_BITWIDTH = " << VTA_ALU_ITER_IN_BITWIDTH << std::endl;
 
     auto unused_bits = 
       (VTA_INSTR_BITWIDTH/2 - VTA_OPCODE_BITWIDTH - 4 - 1 - VTA_ALU_UOP_BEGIN_BITWIDTH - 
@@ -411,17 +416,24 @@ void DefineInstr(Ila& m) {
 
     auto dst_factor_out = Extract(ins_temp, VTA_ALU_DST_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_OUT_BITWIDTH;
+    std::cout << "VTA_ALU_DST_FACTOR_OUT_BITWIDTH = " << VTA_ALU_DST_FACTOR_OUT_BITWIDTH << std::endl;
     auto dst_factor_in = Extract(ins_temp, VTA_ALU_DST_FACTOR_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_DST_FACTOR_IN_BITWIDTH;
+    std::cout << "VTA_ALU_DST_FACTOR_IN_BITWIDTH = " << VTA_ALU_DST_FACTOR_IN_BITWIDTH << std::endl;
     auto src_factor_out = Extract(ins_temp, VTA_ALU_SRC_FACTOR_OUT_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_OUT_BITWIDTH;
+    std::cout << "VTA_ALU_SRC_FACTOR_OUT_BITWIDTH = " << VTA_ALU_SRC_FACTOR_OUT_BITWIDTH << std::endl;
     auto src_factor_in = Extract(ins_temp, VTA_ALU_SRC_FACTOR_IN_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_SRC_FACTOR_IN_BITWIDTH;
+    std::cout << "VTA_ALU_SRC_FACTOR_IN_BITWIDTH = " << VTA_ALU_SRC_FACTOR_IN_BITWIDTH << std::endl;
     auto alu_opcode = Extract(ins_temp, VTA_ALU_OPCODE_BITWIDTH-1, 0);
     ins_temp = ins_temp >> VTA_ALU_OPCODE_BITWIDTH;
+    std::cout << "VTA_ALU_OPCODE_BITWIDTH = " << VTA_ALU_OPCODE_BITWIDTH << std::endl;
     auto use_imm = SelectBit(ins_temp, 0);
     ins_temp = ins_temp >> VTA_ALU_USE_IMM_FLAG_BITWIDTH;
+    std::cout << "VTA_ALU_USE_IMM_FLAG_BITWIDTH = " << VTA_ALU_USE_IMM_FLAG_BITWIDTH << std::endl;
     auto imm = Extract(ins_temp, VTA_ALU_IMM_BITWIDTH-1, 0);
+    std::cout << "VTA_ALU_IMM_BITWIDTH = " << VTA_ALU_IMM_BITWIDTH << std::endl;
 
     auto is_max = (alu_opcode == VTA_ALU_OPCODE_MAX);
     instr.SetDecode(is_opcode_alu & is_max);
