@@ -12,7 +12,7 @@ namespace vta {
 // instruction opcode field bitwidth
 #define VTA_OPCODE_BITWIDTH 3
 // ALU opcode bitwidth
-#define VTA_ALU_OPCODE_BITWIDTH 2
+#define VTA_ALU_OPCODE_BITWIDTH 3
 
 // Opcode 
 #define VTA_OPCODE_LOAD 0
@@ -25,6 +25,7 @@ namespace vta {
 #define VTA_ALU_OPCODE_MAX 1
 #define VTA_ALU_OPCODE_ADD 2
 #define VTA_ALU_OPCODE_SHR 3
+#define VTA_ALU_OPCODE_MUL 4
 
 // ------------------------------
 // memory type field bitwidth

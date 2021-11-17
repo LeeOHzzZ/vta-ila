@@ -14,6 +14,7 @@ FuncRef AccMin("AccMin", acc_type, acc_type, acc_type);
 FuncRef AccMax("AccMax", acc_type, acc_type, acc_type);
 FuncRef AccAdd("AccAdd", acc_type, acc_type, acc_type);
 FuncRef AccShr("AccShr", acc_type, acc_type, acc_type);
+FuncRef AccMul("AccMul", acc_type, acc_type, acc_type);
 FuncRef Acc2Out("Acc2Out", out_type, acc_type);
 
 
@@ -325,6 +326,30 @@ void DefineChildALU(Ila& m) {
     auto src_1 = Ite(m.state(VTA_ALU_USE_IMM_FLAG) == VTA_VALID,
                      Imm2Acc(imm), Load(src_tensor, tensor_idx));
     auto result = AccShr(src_0, src_1);
+
+    auto dst_tensor_next = Store(dst_tensor, tensor_idx, result);
+    auto o_tensor_next = Store(o_tensor, tensor_idx, Acc2Out(result));
+    instr.SetUpdate(dst_tensor, dst_tensor_next);
+    instr.SetUpdate(o_tensor, o_tensor_next);
+
+    auto next_state = BvConst(VTA_CHILD_STATE_ALU_IN_LOOP_BLOCK_IDX, state.bit_width());
+    instr.SetUpdate(state, next_state);
+  }
+
+  { // instruction alu compute ---- mul
+    LOG(INFO) << "start defining alu_mul";
+    auto instr = child.NewInstr("vta_child_alu_compute_mul");
+    auto is_instr_valid = ((child_valid_flag == VTA_VALID) &
+                            (state == VTA_CHILD_STATE_ALU_COMPUTE) &
+                            (alu_opcode == VTA_ALU_OPCODE_MUL));
+    instr.SetDecode(is_instr_valid);
+
+    auto tensor_idx = i_cntr*VTA_BLOCK_OUT + b_cntr;
+    auto src_0 = Load(dst_tensor, tensor_idx);
+    auto imm = m.state(VTA_ALU_IMM);
+    auto src_1 = Ite(m.state(VTA_ALU_USE_IMM_FLAG) == VTA_VALID,
+                     Imm2Acc(imm), Load(src_tensor, tensor_idx));
+    auto result = AccMul(src_0, src_1);
 
     auto dst_tensor_next = Store(dst_tensor, tensor_idx, result);
     auto o_tensor_next = Store(o_tensor, tensor_idx, Acc2Out(result));

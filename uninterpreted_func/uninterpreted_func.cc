@@ -56,6 +56,17 @@ sc_biguint<32> vta::AccShr(sc_biguint<32> in_0, sc_biguint<32> in_1) {
   return result;
 }
 
+sc_biguint<32> vta::AccMul(sc_biguint<32> in_0, sc_biguint<32> in_1) {
+  sc_bigint<32> in_0_s = in_0;
+  sc_bigint<32> in_1_s = in_1;
+  ap_int<32> src_0 = in_0_s.to_int();
+  ap_int<32> src_1 = in_1_s.to_int();
+  ap_int<32> mul_out = src_0 * src_1;
+  sc_bigint<32> result_s = mul_out.to_int();
+  sc_biguint<32> result = result_s;
+  return result;
+}
+
 sc_biguint<8> vta::Accum2Out(sc_biguint<32> accum_in) {
   sc_bigint<32> accum_in_s = accum_in;
   ap_int<32> accum = accum_in_s.to_int();
